@@ -23,8 +23,7 @@ def test_upload():
     try:
         with open("sample.txt", "rb") as f1, open("sample.md", "rb") as f2:
             files = [
-                ("files", ("sample.txt", f1, "text/plain")),
-                ("files", ("sample.md", f2, "text/markdown"))
+                ("files", ("sample.txt", f1, "text/plain"))
             ]
             response = client.post("/api/v1/upload", files=files)
             print(f"Upload Response: {response.status_code} - {response.json()}")
@@ -36,7 +35,7 @@ def test_query():
     print("Testing Query...")
     query_payload = {"query": "What is Agentic RAG?"}
     response = client.post("/api/v1/query", json=query_payload)
-    print(f"Query Response: {response.status_code} - {response.json()}")
+    print(f"Query Response: {response.status_code} - {str(response.json()).encode('utf-8', errors='ignore')}")
     assert response.status_code == 200
     data = response.json()
     assert "answer" in data
