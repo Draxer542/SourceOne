@@ -13,5 +13,11 @@ wheels/
 .env
 
 # Data files
-.data/
-.opt/
+data/chroma_db/
+
+# Operating System temporary files
+opt/__MACOSX/
+opt/
+
+# This ignores the ms-marco- folder and its contents.
+opt/ms-marco-*/
