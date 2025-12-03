@@ -8,11 +8,16 @@ app = FastAPI(
     version="1.0.0"
 )
 
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+
 app.include_router(router, prefix="/api/v1")
+
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 @app.get("/")
 async def root():
-    return {"message": "Welcome to Agentic RAG API. Visit /docs for Swagger UI."}
+    return FileResponse("app/static/index.html")
 
 if __name__ == "__main__":
     import uvicorn
