@@ -2,7 +2,7 @@ import os
 from typing import List
 from fastapi import UploadFile, HTTPException
 from langchain_community.document_loaders import PyPDFLoader, TextLoader, Docx2txtLoader, UnstructuredMarkdownLoader
-from langchain_experimental.text_splitter import SemanticChunker
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
@@ -90,10 +90,14 @@ class IngestionService:
 
     def _chunk_documents(self, documents: List[Document]) -> List[Document]:
         """
-        Chunks documents using Semantic Chunking.
+        Chunks documents using RecursiveCharacterTextSplitter.
         """
-        logger.info("Chunking documents using SemanticChunker...")
-        text_splitter = SemanticChunker(self.embeddings)
+        logger.info("Chunking documents...")
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=1000,
+            chunk_overlap=200,
+            separators=["\n\n", "\n", " ", ""]
+        )
         chunks = text_splitter.split_documents(documents)
         logger.info(f"Created {len(chunks)} chunks.")
         return chunks
