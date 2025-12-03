@@ -1,6 +1,6 @@
 from typing import List
 from langchain_chroma import Chroma
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_core.documents import Document
 from flashrank import Ranker, RerankRequest
 from app.core.config import settings
@@ -8,7 +8,7 @@ from app.core.logging import logger
 
 class RetrievalService:
     def __init__(self):
-        self.embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key=settings.GOOGLE_API_KEY)
+        self.embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
         self.vector_store = Chroma(
             collection_name="agentic_rag",
             embedding_function=self.embeddings,
