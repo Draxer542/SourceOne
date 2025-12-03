@@ -1,0 +1,16 @@
+fastapi
+uvicorn
+pydantic
+pydantic-settings
+langchain
+langchain-community
+langchain-google-genai
+chromadb
+flashrank
+python-multipart
+python-dotenv
+aiofiles
+pypdf
+docx2txt
+unstructured
+langchain-experimental
