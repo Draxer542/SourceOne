@@ -14,3 +14,7 @@ pypdf
 docx2txt
 unstructured
 langchain-experimental
+langchain-chroma
+markdown
+langchain-huggingface
+sentence-transformers
