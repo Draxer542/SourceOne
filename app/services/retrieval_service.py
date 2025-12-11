@@ -119,4 +119,13 @@ class RetrievalService:
         logger.info(f"Reranking complete. Top {len(reranked_docs)} returned.")
         return reranked_docs
 
+    def refresh_index(self):
+        """
+        Refreshes the ensemble retriever by reloading documents from the vector store.
+        This is useful after new documents are ingested.
+        """
+        logger.info("Refreshing Hybrid Search Index...")
+        self.ensemble_retriever = self._initialize_ensemble_retriever()
+        logger.info("Hybrid Search Index Refreshed.")
+
 retrieval_service = RetrievalService()
