@@ -16,6 +16,8 @@ async def upload_files(files: List[UploadFile] = File(...)):
     logger.info("Received upload request.")
     try:
         result = await ingestion_service.process_files(files)
+        # Refresh the retrieval index to include new documents
+        retrieval_service.refresh_index()
         return UploadResponse(message=result["message"])
     except HTTPException as e:
         raise e
