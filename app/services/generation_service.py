@@ -11,13 +11,13 @@ class GenerationService:
         self.llm = ChatGoogleGenerativeAI(
             model="gemini-2.5-flash",
             google_api_key=settings.GOOGLE_API_KEY,
-            temperature=0.3
+            temperature=0.5
         )
         self.prompt = ChatPromptTemplate.from_template(
             """
-            You are a helpful assistant. Answer the user's question based ONLY on the following context. 
-            If the answer is not in the context, say "I don't know based on the provided documents."
-            
+            Role: You are a helpful assistant. 
+            Instructions: Answer the user's question based on the following context.
+              
             Context:
             {context}
             
