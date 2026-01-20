@@ -3,11 +3,11 @@ from typing import List
 from fastapi import UploadFile, HTTPException
 from langchain_community.document_loaders import PyPDFLoader, TextLoader, Docx2txtLoader, UnstructuredMarkdownLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
 from app.core.config import settings
 from app.core.logging import logger
+from app.services.embeddings_service import get_embeddings
 import aiofiles
 import tempfile
 
@@ -16,7 +16,7 @@ MAX_FILES = 3
 
 class IngestionService:
     def __init__(self):
-        self.embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+        self.embeddings = get_embeddings()  # Use singleton to avoid duplicate loading
         self.vector_store = Chroma(
             collection_name="agentic_rag",
             embedding_function=self.embeddings,

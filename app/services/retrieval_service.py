@@ -1,26 +1,37 @@
-from typing import List
+from typing import List, Optional
 from langchain_chroma import Chroma
-from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_core.documents import Document
 from langchain_community.retrievers import BM25Retriever
 from langchain_classic.retrievers import EnsembleRetriever
-from flashrank import Ranker, RerankRequest
+from flashrank import RerankRequest  # Keep lightweight class import
 from app.core.config import settings
 from app.core.logging import logger
+from app.services.embeddings_service import get_embeddings
 
 class RetrievalService:
     def __init__(self):
-        self.embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+        self.embeddings = get_embeddings()  # Use singleton
         self.vector_store = Chroma(
             collection_name="agentic_rag",
             embedding_function=self.embeddings,
             persist_directory=settings.CHROMA_DB_DIR
         )
-        # Initialize FlashRank
-        self.ranker = Ranker(model_name="ms-marco-MiniLM-L-12-v2", cache_dir="opt")
+        # Lazy-load FlashRank: only initialize when needed
+        self.ranker = None
         
-        # Initialize Hybrid Search
-        self.ensemble_retriever = self._initialize_ensemble_retriever()
+        # Lazy-initialize Hybrid Search: only on first use
+        self.ensemble_retriever: Optional[EnsembleRetriever] = None
+
+    def _get_ranker(self):
+        """
+        Lazy loads FlashRank model on first use to speed up startup.
+        """
+        if self.ranker is None:
+            logger.info("Lazy-loading FlashRank model...")
+            from flashrank import Ranker  # Import only when needed
+            self.ranker = Ranker(model_name="ms-marco-MiniLM-L-12-v2", cache_dir="opt")
+            logger.info("FlashRank model loaded and cached.")
+        return self.ranker
 
     def _initialize_ensemble_retriever(self):
         """
@@ -72,6 +83,14 @@ class RetrievalService:
             # Fallback to vector store only if BM25 fails
             return self.vector_store.as_retriever(search_kwargs={"k": 10})
 
+    def _get_ensemble_retriever(self):
+        """
+        Lazy-initializes the ensemble retriever on first use.
+        """
+        if self.ensemble_retriever is None:
+            self.ensemble_retriever = self._initialize_ensemble_retriever()
+        return self.ensemble_retriever
+
     def retrieve(self, query: str, k: int = 10) -> List[Document]:
         """
         Retrieves top k documents using Hybrid Search (Ensemble).
@@ -83,7 +102,7 @@ class RetrievalService:
         # it relies on constituent retrievers. 
         # We can slice the result.
         
-        docs = self.ensemble_retriever.invoke(query)
+        docs = self._get_ensemble_retriever().invoke(query)
         return docs[:k]
 
     def rerank(self, query: str, documents: List[Document], top_n: int = 5) -> List[Document]:
@@ -95,6 +114,8 @@ class RetrievalService:
 
         logger.info(f"Reranking {len(documents)} documents...")
         
+        ranker = self._get_ranker()
+        
         # Prepare data for FlashRank
         passages = [
             {"id": str(i), "text": doc.page_content, "meta": doc.metadata} 
@@ -102,7 +123,7 @@ class RetrievalService:
         ]
         
         rerank_request = RerankRequest(query=query, passages=passages)
-        results = self.ranker.rerank(rerank_request)
+        results = ranker.rerank(rerank_request)
         
         # Sort by score and take top_n
         results = sorted(results, key=lambda x: x["score"], reverse=True)[:top_n]
