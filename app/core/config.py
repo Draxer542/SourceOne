@@ -6,8 +6,10 @@ load_dotenv()
 
 class Settings(BaseSettings):
     GOOGLE_API_KEY: str = os.getenv("GOOGLE_API_KEY", "")
+    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
     CHROMA_DB_DIR: str = os.getenv("CHROMA_DB_DIR", "data/chroma_db")
+    NVIDIA_API_KEY: str = os.getenv("NVIDIA_API_KEY", "")
     
     class Config:
         env_file = ".env"
