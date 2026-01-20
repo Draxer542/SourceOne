@@ -3,378 +3,1603 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Ask questions about your documents using AI" />
     <title>Agentic RAG</title>
+    <!-- Markdown rendering library -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
+    <!-- KaTeX for math rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <!-- Highlight.js for code syntax highlighting -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github.min.css">
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+      /* Design Tokens */
       :root {
-        --bg-color: #0f172a;
-        --card-bg: #1e293b;
-        --text-primary: #f8fafc;
-        --text-secondary: #94a3b8;
-        --accent: #3b82f6;
-        --accent-hover: #2563eb;
-        --success: #10b981;
-        --error: #ef4444;
+        /* Spacing Scale */
+        --space-xs: 4px;
+        --space-sm: 8px;
+        --space-md: 16px;
+        --space-lg: 24px;
+        --space-xl: 32px;
+        --space-2xl: 48px;
+
+        /* Typography Scale */
+        --font-size-xs: 12px;
+        --font-size-sm: 14px;
+        --font-size-base: 16px;
+        --font-size-lg: 18px;
+        --font-size-xl: 20px;
+        --font-size-2xl: 24px;
+        --font-size-3xl: 32px;
+
+        /* Line Heights */
+        --line-height-tight: 1.4;
+        --line-height-normal: 1.6;
+        --line-height-relaxed: 1.8;
+
+        /* Colors - Neutral Palette */
+        --color-white: #ffffff;
+        --color-gray-50: #f9fafb;
+        --color-gray-100: #f3f4f6;
+        --color-gray-200: #e5e7eb;
+        --color-gray-300: #d1d5db;
+        --color-gray-400: #9ca3af;
+        --color-gray-500: #6b7280;
+        --color-gray-600: #4b5563;
+        --color-gray-700: #374151;
+        --color-gray-800: #1f2937;
+        --color-gray-900: #111827;
+
+        /* Semantic Colors */
+        --color-primary: #2563eb;
+        --color-primary-hover: #1d4ed8;
+        --color-primary-light: #eff6ff;
+        --color-success: #059669;
+        --color-success-light: #ecfdf5;
+        --color-error: #dc2626;
+        --color-error-light: #fef2f2;
+        --color-warning: #d97706;
+        --color-warning-light: #fffbeb;
+
+        /* Shadows */
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-focus: 0 0 0 3px rgba(37, 99, 235, 0.1);
+
+        /* Border Radius */
+        --radius-sm: 4px;
+        --radius-md: 6px;
+        --radius-lg: 8px;
+        --radius-xl: 12px;
+
+        /* Transitions */
+        --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+        --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
       }
 
       body {
-        font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
-        background-color: var(--bg-color);
-        color: var(--text-primary);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        background-color: var(--color-gray-50);
+        color: var(--color-gray-900);
         margin: 0;
         padding: 0;
-        display: flex;
-        justify-content: center;
-        min-height: 100vh;
+        line-height: var(--line-height-normal);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
       }
 
       .container {
         width: 100%;
-        max-width: 800px;
-        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: var(--space-lg);
         display: flex;
         flex-direction: column;
-        gap: 2rem;
+        gap: var(--space-2xl);
+        min-height: 100vh;
       }
 
+      /* Header */
       header {
         text-align: center;
-        margin-bottom: 1rem;
+        padding: var(--space-xl) 0;
       }
 
       h1 {
-        font-size: 2.5rem;
-        background: linear-gradient(to right, #60a5fa, #a78bfa);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        font-size: var(--font-size-3xl);
+        font-weight: 700;
+        margin: 0 0 var(--space-sm) 0;
+        color: var(--color-gray-900);
+        letter-spacing: -0.02em;
+      }
+
+      .header-subtitle {
+        font-size: var(--font-size-base);
+        color: var(--color-gray-600);
         margin: 0;
       }
 
+      /* Cards */
       .card {
-        background-color: var(--card-bg);
-        border-radius: 1rem;
-        padding: 1.5rem;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-          0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        border: 1px solid rgba(255, 255, 255, 0.05);
+        background-color: var(--color-white);
+        border-radius: var(--radius-xl);
+        padding: var(--space-xl);
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--color-gray-200);
+      }
+
+      .card-header {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-md);
+        margin-bottom: var(--space-lg);
       }
 
       h2 {
-        margin-top: 0;
-        font-size: 1.25rem;
-        color: var(--text-primary);
-        margin-bottom: 1rem;
+        font-size: var(--font-size-xl);
+        font-weight: 600;
+        margin: 0;
+        color: var(--color-gray-900);
+      }
+
+      .card-subtitle {
+        font-size: var(--font-size-sm);
+        color: var(--color-gray-600);
+        margin: 0;
       }
 
       /* Upload Section */
       .upload-area {
-        border: 2px dashed var(--text-secondary);
-        border-radius: 0.75rem;
-        padding: 2rem;
+        border: 2px dashed var(--color-gray-300);
+        border-radius: var(--radius-lg);
+        padding: var(--space-2xl);
         text-align: center;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: all var(--transition-base);
+        background-color: transparent;
       }
 
       .upload-area:hover {
-        border-color: var(--accent);
-        background-color: rgba(59, 130, 246, 0.05);
+        border-color: var(--color-primary);
+        background-color: var(--color-primary-light);
+      }
+
+      .upload-area:focus-within {
+        border-color: var(--color-primary);
+        box-shadow: var(--shadow-focus);
+        background-color: var(--color-primary-light);
+      }
+
+      .upload-area-icon {
+        font-size: var(--font-size-2xl);
+        margin-bottom: var(--space-md);
+        display: block;
+      }
+
+      .upload-area-text {
+        font-size: var(--font-size-base);
+        font-weight: 500;
+        color: var(--color-gray-900);
+        margin: 0 0 var(--space-xs) 0;
+      }
+
+      .upload-area-hint {
+        font-size: var(--font-size-sm);
+        color: var(--color-gray-600);
+        margin: 0;
       }
 
       .file-input {
         display: none;
       }
 
+      /* Buttons */
       .btn {
-        background-color: var(--accent);
-        color: white;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 16px;
+        min-height: 44px;
+        min-width: 44px;
+        font-size: var(--font-size-base);
+        font-weight: 500;
         border: none;
-        padding: 0.75rem 1.5rem;
-        border-radius: 0.5rem;
-        font-weight: 600;
+        border-radius: var(--radius-md);
         cursor: pointer;
-        transition: background-color 0.2s;
+        transition: all var(--transition-fast);
+        text-decoration: none;
+        gap: var(--space-sm);
+        white-space: nowrap;
+        user-select: none;
       }
 
-      .btn:hover {
-        background-color: var(--accent-hover);
+      .btn-primary {
+        background-color: var(--color-primary);
+        color: var(--color-white);
       }
 
-      .btn:disabled {
-        opacity: 0.5;
+      .btn-primary:hover:not(:disabled) {
+        background-color: var(--color-primary-hover);
+        box-shadow: var(--shadow-md);
+      }
+
+      .btn-primary:active:not(:disabled) {
+        background-color: #1e40af;
+      }
+
+      .btn-primary:disabled {
+        opacity: 0.6;
         cursor: not-allowed;
       }
 
+      .btn-warning {
+        background-color: var(--color-warning);
+        color: var(--color-white);
+      }
+
+      .btn-warning:hover:not(:disabled) {
+        background-color: #b45309;
+        box-shadow: var(--shadow-md);
+      }
+
+      .btn-warning:active:not(:disabled) {
+        background-color: #92400e;
+      }
+
+      .btn-warning:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .btn-icon {
+        background-color: var(--color-gray-100);
+        color: var(--color-gray-600);
+        border: 1px solid var(--color-gray-300);
+        padding: 10px 12px;
+        min-width: 44px;
+      }
+
+      .btn-icon:hover:not(:disabled) {
+        background-color: var(--color-gray-200);
+        border-color: var(--color-gray-400);
+      }
+
+      .btn.loading {
+        opacity: 0.8;
+      }
+
+      .btn-secondary {
+        background-color: var(--color-gray-100);
+        color: var(--color-gray-900);
+        border: 1px solid var(--color-gray-300);
+      }
+
+      .btn-secondary:hover:not(:disabled) {
+        background-color: var(--color-gray-200);
+      }
+
+      .btn-small {
+        padding: 6px 12px;
+        font-size: var(--font-size-sm);
+        min-height: auto;
+        min-width: auto;
+      }
+
+      .btn-icon {
+        padding: 8px;
+        min-width: 32px;
+        min-height: 32px;
+      }
+
+      .btn:focus-visible {
+        outline: 2px solid var(--color-primary);
+        outline-offset: 2px;
+      }
+
+      /* File List */
       #file-list {
-        margin-top: 1rem;
+        margin-top: var(--space-lg);
         display: flex;
         flex-direction: column;
-        gap: 0.5rem;
+        gap: var(--space-sm);
       }
 
       .file-item {
-        background-color: rgba(255, 255, 255, 0.05);
-        padding: 0.5rem 1rem;
-        border-radius: 0.5rem;
-        font-size: 0.9rem;
+        background-color: var(--color-gray-50);
+        border: 1px solid var(--color-gray-200);
+        padding: var(--space-md);
+        border-radius: var(--radius-md);
         display: flex;
         justify-content: space-between;
         align-items: center;
+        transition: all var(--transition-fast);
+      }
+
+      .file-item:hover {
+        background-color: var(--color-gray-100);
+        border-color: var(--color-gray-300);
+      }
+
+      .file-item-name {
+        font-size: var(--font-size-sm);
+        color: var(--color-gray-900);
+        font-weight: 500;
+        flex: 1;
+        word-break: break-word;
+        margin-right: var(--space-md);
+      }
+
+      .file-item-remove {
+        background: none;
+        border: none;
+        color: var(--color-gray-600);
+        cursor: pointer;
+        padding: var(--space-xs);
+        border-radius: var(--radius-sm);
+        transition: all var(--transition-fast);
+        font-size: var(--font-size-base);
+      }
+
+      .file-item-remove:hover {
+        background-color: var(--color-error-light);
+        color: var(--color-error);
+      }
+
+      /* Actions Row */
+      .actions-row {
+        display: flex;
+        justify-content: flex-end;
+        gap: var(--space-md);
+        margin-top: var(--space-lg);
+      }
+
+      /* Status Messages */
+      .status {
+        font-size: var(--font-size-sm);
+        margin-top: var(--space-md);
+        min-height: var(--space-lg);
+        padding: var(--space-md);
+        border-radius: var(--radius-md);
+        display: none;
+      }
+
+      .status.show {
+        display: block;
+      }
+
+      .status.success {
+        background-color: var(--color-success-light);
+        color: var(--color-success);
+        border: 1px solid #d1fae5;
+      }
+
+      .status.error {
+        background-color: var(--color-error-light);
+        color: var(--color-error);
+        border: 1px solid #fee2e2;
+      }
+
+      .status.loading {
+        background-color: var(--color-primary-light);
+        color: var(--color-primary);
+        border: 1px solid #bfdbfe;
+      }
+
+      /* Selected Files Display */
+      .selected-files-container {
+        background-color: var(--color-gray-50);
+        border: 1px solid var(--color-gray-200);
+        border-radius: var(--radius-md);
+        padding: var(--space-md) var(--space-lg);
+        margin-bottom: var(--space-lg);
+      }
+
+      .selected-files-label {
+        font-size: var(--font-size-sm);
+        font-weight: 600;
+        color: var(--color-gray-700);
+        margin: 0 0 var(--space-md) 0;
+      }
+
+      .selected-files-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-sm);
+      }
+
+      .selected-file-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background-color: var(--color-white);
+        border: 1px solid var(--color-gray-200);
+        border-radius: var(--radius-sm);
+        padding: var(--space-sm) var(--space-md);
+        font-size: var(--font-size-sm);
+      }
+
+      .selected-file-name {
+        color: var(--color-gray-900);
+        font-weight: 500;
+        word-break: break-word;
+        flex: 1;
+      }
+
+      .btn-icon-small {
+        background: none;
+        border: none;
+        color: var(--color-gray-500);
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: var(--radius-sm);
+        transition: all var(--transition-fast);
+        font-size: var(--font-size-base);
+        line-height: 1;
+      }
+
+      .btn-icon-small:hover {
+        background-color: var(--color-error-light);
+        color: var(--color-error);
       }
 
       /* Chat Section */
       .chat-box {
-        height: 400px;
+        height: 700px;
         overflow-y: auto;
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        border-radius: 0.75rem;
-        padding: 1rem;
-        margin-bottom: 1rem;
+        border: 1px solid var(--color-gray-200);
+        border-radius: var(--radius-lg);
+        padding: var(--space-lg);
+        margin-bottom: var(--space-lg);
         display: flex;
         flex-direction: column;
-        gap: 1rem;
-        background-color: rgba(0, 0, 0, 0.2);
+        gap: var(--space-lg);
+        background-color: var(--color-gray-50);
       }
 
       .message {
+        display: flex;
+        animation: fadeIn var(--transition-base);
+        width: 100%;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(4px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .message-content {
         max-width: 80%;
-        padding: 0.75rem 1rem;
-        border-radius: 1rem;
-        line-height: 1.5;
+        padding: var(--space-md) var(--space-lg);
+        border-radius: var(--radius-lg);
+        line-height: var(--line-height-relaxed);
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+        white-space-collapse: preserve-spaces;
+        display: block;
+        width: auto;
+        word-break: normal;
       }
 
       .message.user {
-        align-self: flex-end;
-        background-color: var(--accent);
-        color: white;
-        border-bottom-right-radius: 0.25rem;
+        justify-content: flex-end;
+      }
+
+      .message.user .message-content {
+        background-color: var(--color-primary);
+        color: var(--color-white);
+        border-radius: var(--radius-lg) var(--radius-lg) var(--radius-sm) var(--radius-lg);
       }
 
       .message.bot {
-        align-self: flex-start;
-        background-color: rgba(255, 255, 255, 0.1);
-        color: var(--text-primary);
-        border-bottom-left-radius: 0.25rem;
+        justify-content: flex-start;
       }
 
+      .message.bot .message-content {
+        background-color: var(--color-white);
+        color: var(--color-gray-900);
+        border: 1px solid var(--color-gray-200);
+        border-radius: var(--radius-lg) var(--radius-lg) var(--radius-lg) var(--radius-sm);
+      }
+
+      /* Markdown content styling */
+      .message-content h1,
+      .message-content h2,
+      .message-content h3,
+      .message-content h4,
+      .message-content h5,
+      .message-content h6 {
+        margin: var(--space-md) 0 var(--space-sm) 0;
+        font-weight: 600;
+        line-height: var(--line-height-tight);
+      }
+
+      .message-content h1 { font-size: var(--font-size-xl); }
+      .message-content h2 { font-size: var(--font-size-lg); }
+      .message-content h3 { font-size: var(--font-size-base); }
+      .message-content h4,
+      .message-content h5,
+      .message-content h6 { font-size: var(--font-size-base); }
+
+      .message-content p {
+        margin: var(--space-md) 0;
+        line-height: var(--line-height-relaxed);
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+      }
+
+      .message-content strong,
+      .message-content b {
+        font-weight: 600;
+        color: var(--color-gray-900);
+      }
+
+      .message-content em,
+      .message-content i {
+        font-style: italic;
+      }
+
+      .message-content code {
+        background-color: var(--color-gray-100);
+        color: var(--color-error);
+        padding: 2px 6px;
+        border-radius: var(--radius-sm);
+        font-family: 'Monaco', 'Courier New', monospace;
+        font-size: 0.9em;
+        word-break: break-all;
+        overflow-wrap: break-word;
+      }
+
+      .message-content pre {
+        background-color: #f6f8fa; /* GitHub Light */
+        border: 1px solid var(--color-gray-200);
+        border-radius: var(--radius-md);
+        padding: 0;
+        overflow-x: auto;
+        margin: var(--space-md) 0;
+        font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
+        font-size: var(--font-size-sm);
+        line-height: var(--line-height-normal);
+        position: relative;
+      }
+
+      .message-content pre code {
+        display: block;
+        padding: var(--space-md);
+        background-color: transparent;
+        color: #24292e; /* refined dark text */
+        white-space: pre;
+        overflow-x: auto;
+        border-top: 1px solid var(--color-gray-200); /* divider */
+      }
+
+      /* Code block header with language and copy button */
+      .code-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: #f6f8fa;
+        padding: var(--space-xs) var(--space-md);
+        /* No absolute positioning to avoid truncation/overlap */
+        border-radius: var(--radius-md) var(--radius-md) 0 0;
+      }
+
+      .code-language {
+        font-size: var(--font-size-xs);
+        color: var(--color-gray-500);
+        text-transform: uppercase;
+        font-weight: 600;
+      }
+
+      .copy-btn {
+        background: none;
+        border: none;
+        color: var(--color-gray-400);
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: var(--radius-sm);
+        font-size: var(--font-size-xs);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        transition: all var(--transition-fast);
+      }
+
+      .copy-btn:hover {
+        background-color: var(--color-gray-700);
+        color: var(--color-white);
+      }
+
+      .copy-btn.copied {
+        color: var(--color-success);
+      }
+
+      .message-content ul,
+      .message-content ol {
+        margin: var(--space-md) 0;
+        padding-left: var(--space-xl);
+        line-height: var(--line-height-relaxed);
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+      }
+
+      .message-content li {
+        margin: var(--space-sm) 0;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+      }
+
+      .message-content blockquote {
+        border-left: 4px solid var(--color-primary);
+        background-color: var(--color-primary-light);
+        padding: var(--space-md) var(--space-lg);
+        margin: var(--space-md) 0;
+        border-radius: var(--radius-md);
+        color: var(--color-gray-700);
+      }
+
+      .message-content blockquote p {
+        margin: 0;
+      }
+
+      .message-content a {
+        color: var(--color-primary);
+        text-decoration: none;
+        border-bottom: 1px dotted var(--color-primary);
+        transition: all var(--transition-fast);
+      }
+
+      .message-content a:hover {
+        color: var(--color-primary-hover);
+        border-bottom-style: solid;
+      }
+
+      .message-content table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: var(--space-md) 0;
+      }
+
+      .message-content th,
+      .message-content td {
+        border: 1px solid var(--color-gray-200);
+        padding: var(--space-sm) var(--space-md);
+        text-align: left;
+      }
+
+      .message-content th {
+        background-color: var(--color-gray-100);
+        font-weight: 600;
+      }
+
+      .message-content hr {
+        border: none;
+        border-top: 1px solid var(--color-gray-200);
+        margin: var(--space-lg) 0;
+      }
+
+      .message.loading .message-content {
+        background-color: var(--color-gray-100);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 96px;
+        min-height: 56px;
+        padding: 12px 16px;
+        border: 1px solid var(--color-gray-200);
+        box-shadow: var(--shadow-sm);
+      }
+
+      /* Input Group */
       .input-group {
         display: flex;
-        gap: 0.5rem;
+        gap: var(--space-md);
+        margin-top: var(--space-lg);
+        align-items: flex-end;
+        position: sticky;
+        bottom: 0;
+        background-color: var(--color-white);
+        padding: var(--space-md) 0;
+        border-top: 1px solid var(--color-gray-200);
+        z-index: 10;
       }
 
-      input[type="text"] {
+      .input-wrapper {
         flex: 1;
-        background-color: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 0.5rem;
-        padding: 0.75rem;
-        color: white;
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-sm);
+      }
+
+      label {
+        font-size: var(--font-size-sm);
+        font-weight: 500;
+        color: var(--color-gray-700);
+      }
+
+      input[type="text"],
+      textarea {
+        flex: 1;
+        background-color: var(--color-white);
+        border: 1px solid var(--color-gray-300);
+        border-radius: var(--radius-md);
+        padding: 10px var(--space-md);
+        min-height: 44px;
+        color: var(--color-gray-900);
         font-family: inherit;
+        font-size: var(--font-size-base);
+        line-height: var(--line-height-normal);
+        transition: all var(--transition-fast);
+        resize: none;
       }
 
-      input[type="text"]:focus {
+      input[type="text"]:focus,
+      textarea:focus {
         outline: none;
-        border-color: var(--accent);
+        border-color: var(--color-primary);
+        box-shadow: var(--shadow-focus);
       }
 
-      .status {
-        font-size: 0.875rem;
-        margin-top: 0.5rem;
-        min-height: 1.25rem;
+      textarea {
+        min-height: 44px;
+        max-height: 120px;
       }
 
-      .status.success {
-        color: var(--success);
+      /* Selected Files Display */
+      .selected-files-container {
+        background-color: var(--color-gray-50);
+        border: 1px solid var(--color-gray-200);
+        border-radius: var(--radius-md);
+        padding: var(--space-md) var(--space-lg);
+        margin-bottom: var(--space-lg);
       }
-      .status.error {
-        color: var(--error);
+
+      .selected-files-label {
+        font-size: var(--font-size-sm);
+        font-weight: 600;
+        color: var(--color-gray-700);
+        margin: 0 0 var(--space-md) 0;
+      }
+
+      .selected-files-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-sm);
+      }
+
+      .selected-file-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background-color: var(--color-white);
+        border: 1px solid var(--color-gray-200);
+        border-radius: var(--radius-sm);
+        padding: var(--space-sm) var(--space-md);
+        font-size: var(--font-size-sm);
+      }
+
+      .selected-file-name {
+        color: var(--color-gray-900);
+        font-weight: 500;
+        word-break: break-word;
+        flex: 1;
+      }
+
+      .btn-icon-small {
+        background: none;
+        border: none;
+        color: var(--color-gray-500);
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: var(--radius-sm);
+        transition: all var(--transition-fast);
+        font-size: var(--font-size-base);
+        line-height: 1;
+      }
+
+      .btn-icon-small:hover {
+        background-color: var(--color-error-light);
+        color: var(--color-error);
+      }
+
+      /* Loading Spinner */
+      .spinner {
+        display: inline-block;
+        width: 26px;
+        height: 26px;
+        border: 3px solid var(--color-gray-400);
+        border-top: 3px solid var(--color-primary);
+        border-radius: 50%;
+        animation: spinnerRotate 0.7s linear infinite;
+      }
+
+      .spinner-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 10px;
+        width: 100%;
+        height: 100%;
+      }
+
+      /* Spinner-only container: no bubble background or border */
+      .spinner-only {
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+      }
+
+      @keyframes spinnerRotate {
+        to { transform: rotate(360deg); }
+      }
+
+      /* Sources/Citations styling */
+      .sources-container {
+        margin-top: var(--space-sm);
+        padding: var(--space-sm) var(--space-md);
+        background-color: var(--color-gray-50);
+        border: 1px solid var(--color-gray-200);
+        border-radius: var(--radius-md);
+        font-size: var(--font-size-sm);
+      }
+
+      .sources-header {
+        display: flex;
+        align-items: center;
+        gap: var(--space-sm);
+        cursor: pointer;
+        color: var(--color-gray-600);
+        font-weight: 500;
+        user-select: none;
+      }
+
+      .sources-header:hover {
+        color: var(--color-primary);
+      }
+
+      .sources-list {
+        margin-top: var(--space-sm);
+        padding-left: var(--space-lg);
+        color: var(--color-gray-700);
+      }
+
+      .sources-list li {
+        margin: var(--space-xs) 0;
+      }
+
+      /* Thinking indicator */
+      .thinking-indicator {
+        display: flex;
+        align-items: center;
+        gap: var(--space-sm);
+        color: var(--color-gray-500);
+        font-size: var(--font-size-sm);
+        font-style: italic;
+      }
+
+      /* Responsive Design */
+      @media (max-width: 640px) {
+        .container {
+          padding: var(--space-md);
+          gap: var(--space-xl);
+        }
+
+        h1 {
+          font-size: var(--font-size-2xl);
+        }
+
+        h2 {
+          font-size: var(--font-size-lg);
+        }
+
+        .card {
+          padding: var(--space-lg);
+        }
+
+        .message-content {
+          max-width: 90%;
+          padding: var(--space-md);
+        }
+
+        .chat-box {
+          height: 500px;
+          padding: var(--space-md);
+        }
+
+        .input-group {
+          gap: var(--space-sm);
+        }
+
+        .btn {
+          padding: 8px 12px;
+          min-height: 40px;
+          min-width: 40px;
+          font-size: var(--font-size-sm);
+        }
+
+        .upload-area {
+          padding: var(--space-xl);
+        }
       }
 
       /* Scrollbar */
       ::-webkit-scrollbar {
         width: 8px;
+        height: 8px;
       }
+
       ::-webkit-scrollbar-track {
         background: transparent;
       }
+
       ::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.1);
+        background: var(--color-gray-300);
         border-radius: 4px;
       }
+
       ::-webkit-scrollbar-thumb:hover {
-        background: rgba(255, 255, 255, 0.2);
+        background: var(--color-gray-400);
+      }
+
+      /* Accessibility */
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border-width: 0;
+      }
+
+      .skip-link {
+        position: absolute;
+        top: -40px;
+        left: 0;
+        background: var(--color-primary);
+        color: var(--color-white);
+        padding: var(--space-md);
+        text-decoration: none;
+        z-index: 100;
+      }
+
+      .skip-link:focus {
+        top: 0;
       }
     </style>
   </head>
   <body>
-    <div class="container">
+    <div class="container" id="main-content">
       <header>
         <h1>Agentic RAG</h1>
-        <p style="color: var(--text-secondary)">
-          Upload documents and ask questions
-        </p>
+        <p class="header-subtitle">Chat with your documents using AI</p>
       </header>
 
-      <!-- Upload Section -->
-      <div class="card">
-        <h2>1. Ingestion Layer</h2>
-        <div
-          class="upload-area"
-          onclick="document.getElementById('fileInput').click()"
-        >
-          <p>Click to select files (PDF, MD, TXT, DOCX)</p>
-          <p style="font-size: 0.8rem; color: var(--text-secondary)">
-            Max 3 files
-          </p>
-          <input
-            type="file"
-            id="fileInput"
-            class="file-input"
-            multiple
-            onchange="handleFileSelect(event)"
-          />
+      <!-- Chat Section (with integrated upload) -->
+      <section class="card" aria-labelledby="chat-heading">
+        <div class="card-header">
+          <h2 id="chat-heading">Ask questions</h2>
+          <p class="card-subtitle">Upload documents or chat with your existing knowledge base</p>
         </div>
-        <div id="file-list"></div>
-        <div style="margin-top: 1rem; text-align: right">
-          <button id="uploadBtn" class="btn" onclick="uploadFiles()" disabled>
-            Process Files
-          </button>
-        </div>
-        <div id="uploadStatus" class="status"></div>
-      </div>
-
-      <!-- Chat Section -->
-      <div class="card">
-        <h2>2. Retrieval & Generation Layer</h2>
-        <div class="chat-box" id="chatBox">
+        
+        <div class="chat-box" id="chatBox" role="log" aria-label="Chat messages">
           <div class="message bot">
-            Hello! Upload some documents above, and then ask me anything about
-            them.
+            <div class="message-content"><i class="fas fa-robot"></i> Hello! Upload some documents using the button below, and then ask me anything about them. You can upload PDF, Markdown, Text, or Word documents (up to 3 files at a time).</div>
           </div>
         </div>
-        <div class="input-group">
-          <input
-            type="text"
-            id="queryInput"
-            placeholder="Ask a question..."
-            onkeypress="handleKeyPress(event)"
-          />
-          <button class="btn" onclick="sendQuery()">Send</button>
+
+        <!-- Selected Files Display -->
+        <div id="selectedFilesList" class="selected-files-container" style="display: none;">
+          <p class="selected-files-label"><i class="fas fa-paperclip"></i> Selected files:</p>
+          <div id="selectedFilesDisplay" class="selected-files-list"></div>
         </div>
-      </div>
+        
+        <div class="input-group">
+          <div class="input-wrapper">
+            <input
+              type="text"
+              id="queryInput"
+              placeholder="Ask a question or upload files..."
+              onkeypress="handleKeyPress(event)"
+              aria-label="Question input"
+            />
+          </div>
+          
+          <!-- Upload Button -->
+          <button 
+            class="btn btn-icon" 
+            id="uploadFileBtn"
+            onclick="document.getElementById('fileInputChat').click()"
+            title="Upload documents"
+            aria-label="Upload documents"
+          >
+            <i class="fas fa-file-arrow-up"></i>
+          </button>
+
+          <!-- Hidden file input -->
+          <input
+            type="file"
+            id="fileInputChat"
+            class="file-input"
+            multiple
+            accept=".pdf,.md,.txt,.docx"
+            onchange="handleFileSelectChat(event)"
+            aria-label="File input"
+            style="display: none;"
+          />
+          
+          <!-- Action Button (Send/Process) -->
+          <button 
+            class="btn btn-primary" 
+            id="actionBtn"
+            onclick="handleActionButtonClick()"
+            aria-label="Send question"
+          >
+            Send
+          </button>
+        </div>
+
+        <!-- Processing Status -->
+        <div 
+          id="processingStatus" 
+          class="status" 
+          role="status" 
+          aria-live="polite"
+          aria-atomic="true"
+        ></div>
+      </section>
     </div>
 
     <script>
       let selectedFiles = [];
+      let isProcessing = false;
 
-      function handleFileSelect(event) {
+      // App state management
+      const AppState = {
+        IDLE: 'idle',           // No files selected, ready for query or upload
+        FILES_SELECTED: 'files_selected',  // Files selected, ready to process
+        PROCESSING: 'processing',          // Processing files
+        READY: 'ready'          // Files processed, ready for queries
+      };
+
+      let currentState = AppState.IDLE;
+
+      // Post-process rendered content: add copy buttons and render math
+      function enhanceRenderedContent(container) {
+        // Add copy buttons to code blocks
+        container.querySelectorAll('pre').forEach(pre => {
+          const code = pre.querySelector('code');
+          if (!code || pre.querySelector('.code-header')) return; // Already processed
+          
+          // Detect language from class
+          const langClass = code.className.match(/language-(\w+)/);
+          const language = langClass ? langClass[1] : 'code';
+          
+          // Create header
+          const header = document.createElement('div');
+          header.className = 'code-header';
+          header.innerHTML = `
+            <span class="code-language">${language}</span>
+            <button class="copy-btn" onclick="copyCode(this)">
+              <i class="fas fa-copy"></i> Copy
+            </button>
+          `;
+          pre.insertBefore(header, code);
+          
+          // Apply syntax highlighting
+          if (window.hljs) {
+            hljs.highlightElement(code);
+          }
+        });
+        
+        // Render LaTeX math
+        if (window.renderMathInElement) {
+          renderMathInElement(container, {
+            delimiters: [
+              {left: '$$', right: '$$', display: true},
+              {left: '$', right: '$', display: false},
+              {left: '\\[', right: '\\]', display: true},
+              {left: '\\(', right: '\\)', display: false}
+            ],
+            throwOnError: false
+          });
+        }
+      }
+
+      // Copy code to clipboard
+      function copyCode(btn) {
+        const pre = btn.closest('pre');
+        const code = pre.querySelector('code');
+        const text = code.textContent;
+        
+        navigator.clipboard.writeText(text).then(() => {
+          btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+          btn.classList.add('copied');
+          setTimeout(() => {
+            btn.innerHTML = '<i class="fas fa-copy"></i> Copy';
+            btn.classList.remove('copied');
+          }, 2000);
+        }).catch(err => {
+          console.error('Failed to copy:', err);
+        });
+      }
+
+      // Handle file selection
+      function handleFileSelectChat(event) {
         const files = Array.from(event.target.files);
         if (files.length > 3) {
-          alert("Maximum 3 files allowed.");
+          showStatus('processingStatus', '<i class="fas fa-circle-exclamation"></i> Maximum 3 files allowed', 'error');
           return;
         }
         selectedFiles = files;
-        updateFileList();
-        document.getElementById("uploadBtn").disabled = files.length === 0;
+        updateSelectedFilesList();
+        updateActionButton();
       }
 
-      function updateFileList() {
-        const list = document.getElementById("file-list");
-        list.innerHTML = "";
-        selectedFiles.forEach((file) => {
-          const item = document.createElement("div");
-          item.className = "file-item";
-          item.textContent = file.name;
-          list.appendChild(item);
+      function updateSelectedFilesList() {
+        const container = document.getElementById('selectedFilesList');
+        const display = document.getElementById('selectedFilesDisplay');
+        
+        if (selectedFiles.length === 0) {
+          container.style.display = 'none';
+          return;
+        }
+
+        container.style.display = 'block';
+        display.innerHTML = '';
+        selectedFiles.forEach((file, index) => {
+          const item = document.createElement('div');
+          item.className = 'selected-file-item';
+          
+          const nameSpan = document.createElement('span');
+          nameSpan.className = 'selected-file-name';
+          nameSpan.textContent = file.name;
+          
+          const removeBtn = document.createElement('button');
+          removeBtn.className = 'btn-icon-small';
+          removeBtn.innerHTML = '<i class="fas fa-xmark"></i>';
+          removeBtn.title = `Remove ${file.name}`;
+          removeBtn.onclick = (e) => {
+            e.preventDefault();
+            selectedFiles.splice(index, 1);
+            updateSelectedFilesList();
+            updateActionButton();
+          };
+          
+          item.appendChild(nameSpan);
+          item.appendChild(removeBtn);
+          display.appendChild(item);
         });
+      }
+
+      function updateActionButton() {
+        const btn = document.getElementById('actionBtn');
+        const input = document.getElementById('queryInput');
+        
+        if (selectedFiles.length > 0) {
+          btn.innerHTML = '<i class="fas fa-cog"></i> Process Docs';
+          btn.classList.remove('btn-primary');
+          btn.classList.add('btn-warning');
+          currentState = AppState.FILES_SELECTED;
+        } else {
+          btn.innerHTML = 'Send';
+          btn.classList.remove('btn-warning');
+          btn.classList.add('btn-primary');
+          currentState = AppState.IDLE;
+        }
+      }
+
+      function handleActionButtonClick() {
+        if (selectedFiles.length > 0) {
+          uploadFiles();
+        } else {
+          sendQuery();
+        }
+      }
+
+      function handleKeyPress(event) {
+        if (event.key === 'Enter' && selectedFiles.length === 0) {
+          sendQuery();
+        }
       }
 
       async function uploadFiles() {
-        const btn = document.getElementById("uploadBtn");
-        const status = document.getElementById("uploadStatus");
+        if (selectedFiles.length === 0) return;
 
+        const btn = document.getElementById('actionBtn');
+        const status = document.getElementById('processingStatus');
+
+        // Set loading state
         btn.disabled = true;
-        btn.textContent = "Processing...";
-        status.textContent = "";
-        status.className = "status";
+        btn.innerHTML = '<span class="spinner"></span> Processing...';
+        btn.classList.add('loading');
+        currentState = AppState.PROCESSING;
 
         const formData = new FormData();
         selectedFiles.forEach((file) => {
-          formData.append("files", file);
+          formData.append('files', file);
         });
 
         try {
-          const response = await fetch("/api/v1/upload", {
-            method: "POST",
+          const response = await fetch('/api/v1/upload', {
+            method: 'POST',
             body: formData,
           });
 
           const data = await response.json();
 
           if (response.ok) {
-            status.textContent = "✓ " + data.message;
-            status.className = "status success";
+            showStatus('processingStatus', '<i class="fas fa-circle-check" style="color: #059669;"></i> ' + data.message, 'success');
+            addMessage(`<i class="fas fa-folder-open"></i> Uploaded ${selectedFiles.map(f => f.name).join(', ')}`, 'bot');
+            
+            selectedFiles = [];
+            updateSelectedFilesList();
+            updateActionButton();
+            currentState = AppState.READY;
+            
+            // Auto-focus query input
+            document.getElementById('queryInput').focus();
           } else {
-            throw new Error(data.detail || "Upload failed");
+            throw new Error(data.detail || 'Upload failed');
           }
         } catch (error) {
-          status.textContent = "✗ " + error.message;
-          status.className = "status error";
+          showStatus('processingStatus', '<i class="fas fa-circle-exclamation"></i> ' + error.message, 'error');
+          currentState = AppState.IDLE;
+          updateActionButton();
         } finally {
           btn.disabled = false;
-          btn.textContent = "Process Files";
-        }
-      }
-
-      function handleKeyPress(event) {
-        if (event.key === "Enter") {
-          sendQuery();
+          btn.classList.remove('loading');
+          updateActionButton();
         }
       }
 
       async function sendQuery() {
-        const input = document.getElementById("queryInput");
+        const input = document.getElementById('queryInput');
         const query = input.value.trim();
 
         if (!query) return;
 
         // Add user message
-        addMessage(query, "user");
-        input.value = "";
+        addMessage(query, 'user');
+        input.value = '';
 
-        // Show loading state (optional, could add a typing indicator)
+        const btn = document.getElementById('actionBtn');
+        btn.disabled = true;
+
+        // Show spinner message while waiting for response
+        const spinnerId = addSpinnerMessage();
 
         try {
-          const response = await fetch("/api/v1/query", {
-            method: "POST",
+          // Use streaming endpoint
+          const response = await fetch('/api/v1/query-stream', {
+            method: 'POST',
             headers: {
-              "Content-Type": "application/json",
+              'Content-Type': 'application/json',
             },
             body: JSON.stringify({ query: query }),
           });
 
-          const data = await response.json();
-
-          if (response.ok) {
-            addMessage(data.answer, "bot");
-          } else {
-            addMessage(
-              "Error: " + (data.detail || "Failed to get answer"),
-              "bot"
-            );
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
           }
+
+          // Reuse spinner message as the streaming message container
+          const box = document.getElementById('chatBox');
+          let spinnerElem = document.getElementById(spinnerId);
+          let content;
+          if (spinnerElem) {
+            // Use the existing spinner container; we'll replace its inner content when data arrives
+            content = spinnerElem.querySelector('.spinner-only');
+            // if the child isn't the spinner-only (unexpected), create a content element
+            if (!content) {
+              content = document.createElement('div');
+              content.className = 'message-content';
+              spinnerElem.appendChild(content);
+            }
+          } else {
+            const msg = document.createElement('div');
+            msg.className = 'message bot';
+            content = document.createElement('div');
+            content.className = 'message-content';
+            msg.appendChild(content);
+            box.appendChild(msg);
+          }
+          box.scrollTop = box.scrollHeight;
+
+          // Process the stream
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder();
+          let fullResponse = '';
+          let buffer = '';
+          let isComplete = false;
+          let sourcesData = null;
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            
+            // Keep the last incomplete line in the buffer
+            buffer = lines.pop() || '';
+
+            for (const line of lines) {
+              // Handle sources event
+              if (line.startsWith('event: sources')) {
+                continue; // Next line will have the data
+              }
+              
+              if (line.startsWith('data: ')) {
+                const rawData = line.slice(6).trim(); // Remove 'data: ' prefix
+                
+                if (rawData === '[DONE]') {
+                  // Stream completed, render final markdown
+                  isComplete = true;
+                  try {
+                    marked.setOptions({
+                      breaks: true,
+                      gfm: true,
+                      tables: true,
+                      headerIds: true,
+                      smartypants: false,
+                      pedantic: false
+                    });
+                    
+                    // 1. Protect Math
+                    const protectedText = MathProtector.protect(fullResponse);
+                    
+                    // 2. Parse Markdown
+                    const rawHtml = marked.parse(protectedText);
+                    
+                    // 3. Sanitize
+                    const cleanHtml = DOMPurify.sanitize(rawHtml, { 
+                      ALLOWED_TAGS: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'strong', 'em', 'u', 'code', 'pre', 'ul', 'ol', 'li', 'blockquote', 'a', 'img', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'hr', 'span'],
+                      ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'target', 'class']
+                    });
+
+                    // 4. Restore Math
+                    content.innerHTML = MathProtector.restore(cleanHtml);
+                    
+                    // 5. Enhance
+                    enhanceRenderedContent(content);
+                    
+                    // Append sources if available
+                    if (sourcesData && sourcesData.length > 0) {
+                      const sourcesContainer = document.createElement('div');
+                      sourcesContainer.className = 'sources-container';
+                      
+                      const uniqueSources = [...new Set(sourcesData.map(s => s.source))];
+                      sourcesContainer.innerHTML = `
+                        <div class="sources-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'">
+                          <i class="fas fa-book-open"></i> Sources (${uniqueSources.length})
+                        </div>
+                        <ul class="sources-list" style="display: none;">
+                          ${uniqueSources.map(src => `<li><i class="fas fa-file-alt"></i> ${src}</li>`).join('')}
+                        </ul>
+                      `;
+                      spinnerElem.appendChild(sourcesContainer);
+                    }
+                  } catch (error) {
+                    content.textContent = fullResponse;
+                  }
+                  break;
+                } else if (rawData.startsWith('[') && rawData.includes('source')) {
+                  // This is the sources data
+                  try {
+                    sourcesData = JSON.parse(rawData);
+                  } catch (e) {
+                    console.error("Error parsing sources", e);
+                  }
+                } else if (rawData.length > 0) {
+                  try {
+                    // The backend sends a JSON string.
+                    const parsedChunk = JSON.parse(rawData);
+                    fullResponse += parsedChunk;
+                  } catch (e) {
+                    console.error("Error parsing chunk", e);
+                    fullResponse += rawData;
+                  }
+                  
+                  // If this content currently holds the spinner, convert it to a message-content bubble
+                  if (content && content.classList && content.classList.contains('spinner-only')) {
+                    content.className = 'message-content';
+                  }
+                  // Update message in real-time with plain text during streaming
+                  content.textContent = fullResponse;
+                  box.scrollTop = box.scrollHeight;
+                }
+              }
+            }
+
+            if (isComplete) break;
+          }
+
+          // Now disable button only after streaming is complete
+          btn.disabled = false;
+          updateActionButton();
+
         } catch (error) {
-          addMessage("Error: " + error.message, "bot");
+          removeSpinnerMessage(spinnerId);
+          addMessage('<i class="fas fa-circle-exclamation"></i> Error: ' + error.message, 'bot');
+          btn.disabled = false;
+          updateActionButton();
         }
       }
 
+      function addSpinnerMessage() {
+        const box = document.getElementById('chatBox');
+        const spinnerId = 'spinner-' + Date.now();
+
+        const msg = document.createElement('div');
+        msg.id = spinnerId;
+        msg.className = 'message bot';
+
+        // create a lightweight content container with thinking indicator
+        const content = document.createElement('div');
+        content.className = 'spinner-only';
+        content.innerHTML = `
+          <div class="thinking-indicator">
+            <div class="spinner" aria-hidden="true"></div>
+            <span>Searching documents...</span>
+          </div>
+        `;
+
+        msg.appendChild(content);
+        box.appendChild(msg);
+        box.scrollTop = box.scrollHeight;
+
+        return spinnerId;
+      }
+
+      function removeSpinnerMessage(spinnerId) {
+        const spinnerElement = document.getElementById(spinnerId);
+        if (spinnerElement) {
+          spinnerElement.remove();
+        }
+      }
+
+      function showStatus(elementId, message, type) {
+        const status = document.getElementById(elementId);
+        status.innerHTML = message;
+        status.className = `status show ${type}`;
+        
+        // Auto-hide success messages after 4 seconds
+        if (type === 'success') {
+          setTimeout(() => {
+            status.className = 'status';
+          }, 4000);
+        }
+      }
+
+      // Math Protector: Protects LaTeX from Markdown rendering and Sanitization
+      const MathProtector = {
+        map: new Map(),
+        
+        protect: function(text) {
+          this.map.clear();
+          let protectedText = text;
+          let counter = 0;
+          
+          // Use markdown-safe placeholders (alphanumeric only, no underscores/asterisks)
+          // 1. Block Math: $$ ... $$
+          protectedText = protectedText.replace(/\$\$([\s\S]*?)\$\$/g, (match, content) => {
+            const id = `MATHBLOCK${counter++}z`; // 'z' suffix to ensure word boundary distinctness if needed
+            this.map.set(id, `$$${content}$$`);
+            return id;
+          });
+
+          // 2. LaTeX Block: \[ ... \]
+          protectedText = protectedText.replace(/\\\[([\s\S]*?)\\\]/g, (match, content) => {
+            const id = `MATHBLOCK${counter++}z`;
+            this.map.set(id, `$$${content}$$`);
+            return id;
+          });
+
+          // 3. Standalone Square Bracket Blocks: \n [ ... ] \n
+          protectedText = protectedText.replace(/(?:^|\n)\s*\[\s*\n([\s\S]*?)\n\s*\]\s*(?:\n|$)/g, (match, content) => {
+            const id = `MATHBLOCK${counter++}z`;
+            this.map.set(id, `\n$$${content}$$\n`);
+            return id;
+          });
+
+          // 4. Inline Math: \( ... \)
+          protectedText = protectedText.replace(/\\\(([\s\S]*?)\\\)/g, (match, content) => {
+            const id = `MATHINLINE${counter++}z`;
+            this.map.set(id, `$${content}$`);
+            return id;
+          });
+          
+          return protectedText;
+        },
+
+        restore: function(text) {
+          let restoredText = text;
+          this.map.forEach((latex, id) => {
+            // Global replace in case it appears multiple times (unlikely but safe)
+            // We use split/join for literal string replacement to avoid regex special char issues with ID
+            restoredText = restoredText.split(id).join(latex);
+          });
+          return restoredText;
+        }
+      };
+
       function addMessage(text, type) {
-        const box = document.getElementById("chatBox");
-        const msg = document.createElement("div");
+        const box = document.getElementById('chatBox');
+        const msg = document.createElement('div');
         msg.className = `message ${type}`;
-        msg.textContent = text;
+        const content = document.createElement('div');
+        content.className = 'message-content';
+        
+        if (type === 'bot') {
+          // Render markdown for bot messages
+          try {
+            // Configure marked options for proper markdown rendering
+            marked.setOptions({
+              breaks: true,
+              gfm: true,
+              tables: true,
+              headerIds: true,
+              smartypants: false
+            });
+            
+            // 1. Protect Math
+            const protectedText = MathProtector.protect(text);
+            
+            // 2. Parse Markdown
+            const rawHtml = marked.parse(protectedText);
+            
+            // 3. Sanitize (allow our placeholders)
+            const cleanHtml = DOMPurify.sanitize(rawHtml, { 
+              ALLOWED_TAGS: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'strong', 'em', 'u', 'code', 'pre', 'ul', 'ol', 'li', 'blockquote', 'a', 'img', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'hr', 'span'],
+              ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'target', 'class']
+            });
+            
+            // 4. Restore Math
+            content.innerHTML = MathProtector.restore(cleanHtml);
+            
+            // 5. Enhance (Render Math + Copy Buttons) 
+            enhanceRenderedContent(content);
+          } catch (error) {
+            // Fallback to plain text if markdown parsing fails
+            content.textContent = text;
+          }
+        } else {
+          // User messages stay as plain text
+          content.textContent = text;
+        }
+        
+        msg.appendChild(content);
         box.appendChild(msg);
         box.scrollTop = box.scrollHeight;
       }
     </script>
   </body>
 </html>
+      
