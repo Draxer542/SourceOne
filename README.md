@@ -27,15 +27,15 @@ A comprehensive Retrieval-Augmented Generation (RAG) system built with FastAPI, 
 ### Prerequisites
 
 - Python 3.13 or higher
-- Google Cloud API key with access to OpenAI models
+- Open AI API key with access to OpenAI models
 
 ### Setup
 
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/yourusername/agenticrag.git
-   cd agenticrag
+   git clone https://github.com/yourusername/sourceone.git
+   cd sourceone
    ```
 
 2. Install dependencies:
@@ -46,7 +46,7 @@ A comprehensive Retrieval-Augmented Generation (RAG) system built with FastAPI, 
 
 3. Create a `.env` file in the root directory and add your configuration:
    ```env
-   GOOGLE_API_KEY=your_google_api_key_here
+   OPENAI_API_KEY=your_openai_api_key_here
    LOG_LEVEL=INFO
    CHROMA_DB_DIR=data/chroma_db
    ```
