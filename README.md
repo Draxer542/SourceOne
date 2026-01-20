@@ -1,4 +1,4 @@
-# Agentic RAG
+# SourceOne
 
 A comprehensive Retrieval-Augmented Generation (RAG) system built with FastAPI, LangChain, ChromaDB, and OpenAI. This project enables users to upload documents, perform intelligent retrieval using hybrid search and reranking, and generate context-aware responses using large language models.
 
