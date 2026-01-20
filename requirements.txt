@@ -18,3 +18,4 @@ langchain-chroma
 markdown
 langchain-huggingface
 sentence-transformers
+rank_bm25
