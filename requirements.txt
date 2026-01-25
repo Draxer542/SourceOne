@@ -19,3 +19,7 @@ markdown
 langchain-huggingface
 sentence-transformers
 rank_bm25
+sqlalchemy
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt
