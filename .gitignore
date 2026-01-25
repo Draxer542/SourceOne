@@ -13,7 +13,8 @@ wheels/
 /.env
 
 # Data files
-data/chroma_db/
+data/
+
 
 # Operating System temporary files
 opt/__MACOSX/
