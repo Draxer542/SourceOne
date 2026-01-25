@@ -25,6 +25,19 @@ class UserCreate(BaseModel):
     @field_validator('email')
     def validate_email(cls, v):
         # Basic regex for email validation to avoid external dependency if possible
+        """
+        Validate that an email address string has a basic valid format.
+        
+        Parameters:
+            cls (type): The model class.
+            v (str): The email address to validate.
+        
+        Returns:
+            str: The original email string if it passes validation.
+        
+        Raises:
+            ValueError: If `v` does not match a basic email address pattern.
+        """
         import re
         if not re.match(r"[^@]+@[^@]+\.[^@]+", v):
             raise ValueError('Invalid email address')
@@ -32,6 +45,18 @@ class UserCreate(BaseModel):
 
     @field_validator('password')
     def validate_password(cls, v):
+        """
+        Validate that a password meets the minimum length requirement.
+        
+        Parameters:
+            v (str): The candidate password to validate.
+        
+        Returns:
+            str: The validated password.
+        
+        Raises:
+            ValueError: If `v` is shorter than 8 characters.
+        """
         if len(v) < 8:
             raise ValueError('Password must be at least 8 characters long')
         # Optional: Add complexity checks (e.g. number, uppercase)
@@ -81,4 +106,3 @@ class ConversationResponse(ConversationBase):
 
 class ConversationDetail(ConversationResponse):
     messages: List[MessageResponse]
-

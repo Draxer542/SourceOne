@@ -8,8 +8,9 @@ from app.core.logging import logger
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
-    Lifespan context manager for app startup/shutdown.
-    Pre-initializes the shared embeddings model on startup.
+    Manage application startup and shutdown lifecycle for the FastAPI app.
+    
+    On startup, logs startup messages, initializes the database schema (creates all tables), and records that the embeddings model will be initialized lazily on first use. After the application finishes running, logs shutdown messages.
     """
     logger.info("🚀 Application starting up...")
     

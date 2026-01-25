@@ -33,7 +33,12 @@ def get_retrieval_service():
     return _retrieval_service
 
 def get_generation_service():
-    """Lazy-load generation service on first use."""
+    """
+    Return the cached generation service, loading and caching it on first call.
+    
+    Returns:
+        The generation service instance used for generation tasks.
+    """
     global _generation_service
     if _generation_service is None:
         from app.services.generation_service import generation_service
@@ -47,8 +52,18 @@ async def upload_files(
     current_user: User = Depends(get_current_user)
 ):
     """
-    Uploads and processes up to 3 files (PDF, MD, TXT, DOCX).
-    Index refresh happens in the background for faster response.
+    Handle uploading and asynchronous processing of up to three supported files.
+    
+    Processes up to three files (PDF, MD, TXT, DOCX) via the ingestion service and schedules a background index refresh to update retrieval state. Returns a user-facing message from the ingestion result.
+    
+    Parameters:
+    	files (List[UploadFile]): Files to upload; accepted formats: PDF, MD, TXT, DOCX. Maximum of 3 files.
+    
+    Returns:
+    	UploadResponse: Response containing a message describing the result of the upload.
+    
+    Raises:
+    	HTTPException: If processing fails or an internal error occurs.
     """
     logger.info("Received upload request.")
     try:
@@ -72,7 +87,18 @@ async def query_rag(
     current_user: User = Depends(get_current_user)
 ):
     """
-    Queries the RAG system with History Context.
+    Handle a RAG query using conversation history, retrieval, reranking, and generation to produce a contextual answer.
+    
+    The function will load or create a conversation for the current user, format and contextualize the query with history, retrieve and rerank documents, generate an answer, persist the user and assistant messages to history, and return the answer along with source documents and the conversation ID.
+    
+    Parameters:
+        request (QueryRequest): Contains the user's query and an optional `conversation_id` to continue an existing conversation.
+    
+    Returns:
+        QueryResponse: Contains `answer` (the generated response), `source_documents` (list of documents with `content` and `metadata` used as sources), and `conversation_id` (existing or newly created conversation identifier).
+    
+    Raises:
+        HTTPException: Raised with status code 500 if an unexpected error occurs while processing the query.
     """
     logger.info(f"Received query: {request.query}")
     try:
@@ -140,11 +166,38 @@ async def query_rag_stream(
     current_user: User = Depends(get_current_user)
 ):
     """
-    Streams the RAG query response in real-time using Server-Sent Events.
+    Streams a RAG query response to the client over Server-Sent Events (SSE).
+    
+    Streams a sequence of SSE events representing the conversational session and incremental answer generation. Events emitted:
+    - "session": first event containing {"conversation_id": <id>} when a new conversation is created.
+    - data events: multiple events containing JSON-encoded answer chunks as they are generated.
+    - "sources": a single event with an array of source objects { "source": <source>, "page": <page?> } derived from the final reranked documents.
+    - "done": a completion event indicating the stream has finished.
+    - On error, a data event with an error message is emitted, followed by a "done" event.
+    
+    Returns:
+        StreamingResponse: an SSE streaming response sending the events described above.
     """
     logger.info(f"Received streaming query: {request.query}")
     
     async def stream_generator():
+        """
+        Stream server-sent events (SSE) that produce a stepwise RAG query response, including conversation session info, incremental answer chunks, source citations, and a completion signal.
+        
+        Yields SSE-formatted strings representing:
+        - a "session" event containing a newly created conversation_id when a new conversation is started;
+        - a sequence of data events where each event contains a JSON-encoded chunk of the generated answer;
+        - a "sources" event with an array of source metadata (source and page) derived from reranked documents;
+        - an "done" event signalling completion;
+        - on error, a data event with an error message followed by the "done" event.
+        
+        Side effects:
+        - Loads or creates a conversation and, if a conversation_id exists, persists user and assistant messages to history.
+        - Retrieves and reranks documents used to generate streamed answer chunks.
+        
+        Returns:
+        SSE event strings (type str) to be consumed by a streaming HTTP response.
+        """
         try:
             retrieval_service = get_retrieval_service()
             generation_service = get_generation_service()

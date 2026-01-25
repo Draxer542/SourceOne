@@ -17,7 +17,10 @@ def get_conversations(
     current_user: User = Depends(get_current_user)
 ):
     """
-    Get all conversations for the current user.
+    Retrieve the current user's conversations with optional pagination.
+    
+    Returns:
+        List[ConversationResponse]: A list of the user's conversations ordered by most recent, constrained by `limit` and offset by `skip`.
     """
     return history_service.get_user_conversations(db, user_id=current_user.id, limit=limit, offset=skip)
 
@@ -28,7 +31,13 @@ def create_conversation(
     current_user: User = Depends(get_current_user)
 ):
     """
-    Create a new conversation manually.
+    Create a new conversation for the authenticated user.
+    
+    Parameters:
+        conversation (ConversationCreate): Request model containing the conversation title.
+    
+    Returns:
+        ConversationResponse: The created conversation object.
     """
     return history_service.create_conversation(db, user_id=current_user.id, title=conversation.title)
 
@@ -39,7 +48,16 @@ def get_conversation_details(
     current_user: User = Depends(get_current_user)
 ):
     """
-    Get full history of a specific conversation.
+    Retrieve the full history and metadata for a specific conversation.
+    
+    Parameters:
+    	conversation_id (int): ID of the conversation to fetch.
+    
+    Returns:
+    	ConversationDetail: The conversation's full history and metadata.
+    
+    Raises:
+    	HTTPException: 404 if the conversation is not found.
     """
     conversation = history_service.get_conversation(db, conversation_id=conversation_id, user_id=current_user.id)
     if not conversation:
@@ -53,7 +71,13 @@ def delete_conversation(
     current_user: User = Depends(get_current_user)
 ):
     """
-    Delete a conversation.
+    Delete the specified conversation for the current authenticated user.
+    
+    Parameters:
+        conversation_id (int): ID of the conversation to delete.
+    
+    Raises:
+        HTTPException: with status code 404 if the conversation does not exist or cannot be deleted.
     """
     success = history_service.delete_conversation(db, conversation_id=conversation_id, user_id=current_user.id)
     if not success:

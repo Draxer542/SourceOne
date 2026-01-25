@@ -14,6 +14,15 @@ router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    """
+    Retrieve the authenticated User associated with the provided JWT access token.
+    
+    Returns:
+        The matching User model instance.
+    
+    Raises:
+        HTTPException: 401 Unauthorized with detail "Could not validate credentials" and header "WWW-Authenticate: Bearer" when the token is invalid, missing the subject (`sub`), or no user is found for the token's subject.
+    """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -34,7 +43,12 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     return user
 
 def mask_email(email: str) -> str:
-    """Masks email for privacy logging, e.g. 'user@example.com' -> 'u***@example.com'"""
+    """
+    Mask an email address for privacy-safe logging.
+    
+    Returns:
+        masked_email (str): The masked email where the local part is replaced with its first character plus '***' when the local part has more than one character (e.g., 'u***@example.com'). If the local part has one or zero characters, or the input is malformed or lacks an '@', returns '***' (no domain).
+    """
     try:
         if "@" not in email:
             return "***"
@@ -51,7 +65,17 @@ def mask_email(email: str) -> str:
 @router.post("/register", response_model=UserResponse)
 def register(user: UserCreate, db: Session = Depends(get_db)):
     """
-    Registers a new user.
+    Create a new user account from the provided registration data and persist it to the database.
+    
+    Parameters:
+        user (UserCreate): Registration data containing at least `email` and `password`.
+    
+    Returns:
+        UserResponse: The newly created user's public fields (for example `id` and `email`).
+    
+    Raises:
+        HTTPException: With status 400 if the email is already registered.
+        HTTPException: With status 500 if a database error occurs during creation.
     """
     logger.info(f"Attempting to register user with email: {mask_email(user.email)}")
     
@@ -85,7 +109,17 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
 @router.post("/login", response_model=Token)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     """
-    Authenticates a user and returns a JWT token.
+    Authenticate a user using credentials from the OAuth2 password form and issue a JWT access token.
+    
+    Parameters:
+    	form_data (OAuth2PasswordRequestForm): Form containing `username` (user email) and `password`.
+    	db (Session): Database session (injected dependency).
+    
+    Returns:
+    	dict: A dictionary with keys `access_token` (the JWT string) and `token_type` (`"bearer"`).
+    
+    Raises:
+    	HTTPException: If the user is not found or the password is incorrect (401 Unauthorized).
     """
     logger.info(f"Login attempt for email: {mask_email(form_data.username)}")
     
