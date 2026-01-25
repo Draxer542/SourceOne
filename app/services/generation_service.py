@@ -18,15 +18,9 @@ class GenerationService:
         )
         self.prompt = ChatPromptTemplate.from_template(
             """
-            Role: You are a precise and helpful assistant.
-            
-            Instructions: 
-            1. Answer the user's question strictly based on the provided context.
-            2. Do not include any information specifically not present in the context.
-            3. Preserve the original formatting of the context (e.g., markdown tables, lists, code blocks) in your answer.
-            4. Do not add introductory or concluding chatter (e.g., "Based on the context...", "Here is the answer..."). Just provide the answer.
-            5. If the answer is not in the context, state that you don't know based on the provided documents.
-
+            Role: You are a helpful assistant. 
+            Instructions: Answer the user's question based on the following context.
+              
             Context:
             {context}
             
@@ -71,9 +65,16 @@ class GenerationService:
             prompt_text = self.prompt.format(context=context_text, question=query)
             
             # Stream using the LLM directly
+            previous_chunk = ""
             async for chunk in self.llm.astream(prompt_text):
                 if chunk.content:
-                    yield chunk.content
+                    # Add space between chunks if needed (when previous chunk ends with word char and current starts with word char)
+                    current_chunk = chunk.content
+                    if previous_chunk and previous_chunk[-1].isalnum() and current_chunk[0].isalnum():
+                        yield " "
+                    
+                    yield current_chunk
+                    previous_chunk = current_chunk
             
             logger.info("Stream generation completed successfully.")
         except Exception as e:
