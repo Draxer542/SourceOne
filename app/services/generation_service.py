@@ -1,11 +1,13 @@
 from typing import List, AsyncGenerator
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.documents import Document
 from langchain_openai import ChatOpenAI
+from langchain_core.messages import HumanMessage, AIMessage, BaseMessage, trim_messages
 from app.core.config import settings
 from app.core.logging import logger
+from app.models import Message
 
 class GenerationService:
     def __init__(self):
@@ -16,7 +18,9 @@ class GenerationService:
             streaming=True,
             openai_api_base="https://integrate.api.nvidia.com/v1"
         )
-        self.prompt = ChatPromptTemplate.from_template(
+        
+        # 1. Answer Generation Prompt (Optimized for Standalone Query + Context)
+        self.answer_prompt = ChatPromptTemplate.from_template(
             """
             Role: You are an expert AI assistant designed to provide accurate answers based on the provided context.
             
@@ -37,7 +41,70 @@ class GenerationService:
             {question}
             """
         )
-        self.chain = self.prompt | self.llm | StrOutputParser()
+        self.answer_chain = self.answer_prompt | self.llm | StrOutputParser()
+
+        # 2. Contextualization Prompt (History-Aware)
+        self.context_system_prompt = (
+            "Given a chat history and the latest user question "
+            "which might reference context in the chat history, "
+            "formulate a standalone question which can be understood "
+            "without the chat history. Do NOT answer the question, "
+            "just reformulate it if needed and otherwise return it as is."
+        )
+        
+        self.context_prompt = ChatPromptTemplate.from_messages(
+            [
+                ("system", self.context_system_prompt),
+                MessagesPlaceholder(variable_name="chat_history"),
+                ("human", "{question}"),
+            ]
+        )
+        self.context_chain = self.context_prompt | self.llm | StrOutputParser()
+
+    def format_history(self, db_messages: List[Message]) -> List[BaseMessage]:
+        """Convert DB messages to LangChain format."""
+        history = []
+        for msg in db_messages:
+            if msg.role == "user":
+                history.append(HumanMessage(content=msg.content))
+            elif msg.role == "assistant":
+                history.append(AIMessage(content=msg.content))
+        return history
+
+    async def contextualize_query(self, query: str, history: List[BaseMessage]) -> str:
+        """
+        Rewrites the query to be standalone based on history.
+        Uses trim_messages to ensure token efficiency (last 4 messages).
+        """
+        if not history:
+            logger.info("No history provided. Using original query.")
+            return query
+            
+        logger.info(f"Contextualizing query: '{query}' with {len(history)} history messages.")
+        for i, msg in enumerate(history):
+            logger.info(f"History[{i}] ({msg.type}): {msg.content}")
+        
+        # Trim history to manage tokens explicitly
+        trimmed_history = trim_messages(
+            history,
+            max_tokens=500, # Approximate token limit for history context
+            strategy="last",
+            token_counter=len, # Fallback simple counter if model not passed, or use llm property
+            include_system=False,
+            start_on="human"
+        )
+        logger.info(f"Trimmed History size: {len(trimmed_history)}")
+        
+        try:
+            standalone_query = await self.context_chain.ainvoke({
+                "chat_history": trimmed_history,
+                "question": query
+            })
+            logger.info(f"Original Query: '{query}' -> Standalone Query: '{standalone_query}'")
+            return standalone_query
+        except Exception as e:
+            logger.error(f"Contextualization failed: {e}")
+            return query
 
     async def generate_answer(self, query: str, context_docs: List[Document]) -> str:
         """
@@ -49,7 +116,7 @@ class GenerationService:
         context_text = "\n\n".join([doc.page_content for doc in context_docs])
         
         try:
-            response = await self.chain.ainvoke({
+            response = await self.answer_chain.ainvoke({
                 "context": context_text,
                 "question": query
             })
@@ -62,24 +129,25 @@ class GenerationService:
     async def generate_answer_stream(self, query: str, context_docs: List[Document]) -> AsyncGenerator[str, None]:
         """
         Streams the answer using the LLM based on the query and retrieved context.
-        Yields text chunks as they are generated, with proper space handling.
         """
         logger.info("Streaming answer generation...")
         
+        # Log retrieved docs for debugging
+        for i, doc in enumerate(context_docs):
+            logger.info(f"Context Doc [{i}]: {doc.page_content[:200]}...") # Log first 200 chars
+
         # Format context
         context_text = "\n\n".join([doc.page_content for doc in context_docs])
         
         try:
             # Build the prompt
-            prompt_text = self.prompt.format(context=context_text, question=query)
+            prompt_text = self.answer_prompt.format(context=context_text, question=query)
+            logger.info(f"Final Generation Prompt: {prompt_text[:500]}...") # Log prompt start
             
             # Stream using the LLM directly
-            previous_chunk = ""
             async for chunk in self.llm.astream(prompt_text):
                 if chunk.content:
-                    current_chunk = chunk.content
-                    yield current_chunk
-                    previous_chunk = current_chunk
+                    yield chunk.content
             
             logger.info("Stream generation completed successfully.")
         except Exception as e:
