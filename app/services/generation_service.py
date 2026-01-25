@@ -18,8 +18,17 @@ class GenerationService:
         )
         self.prompt = ChatPromptTemplate.from_template(
             """
-            Role: You are a helpful assistant. 
-            Instructions: Answer the user's question based on the following context.
+            Role: You are an expert AI assistant designed to provide accurate answers based on the provided context.
+            
+            Instructions:
+            1. Use ONLY the information provided in the "Context" section below to answer the user's question.
+            2. If the answer cannot be found in the context, state clearly that you don't have enough information. Do not fabricate answers.
+            3. Format your response using clear and professional Markdown:
+               - Use headers (#, ##, ###) to structure the answer.
+               - Use bullet points or numbered lists for steps or lists.
+               - Use bolding (**text**) for key concepts.
+               - Use code blocks (```language ... ```) for code snippets.
+            4. Be concise but thorough.
               
             Context:
             {context}
@@ -68,11 +77,7 @@ class GenerationService:
             previous_chunk = ""
             async for chunk in self.llm.astream(prompt_text):
                 if chunk.content:
-                    # Add space between chunks if needed (when previous chunk ends with word char and current starts with word char)
                     current_chunk = chunk.content
-                    if previous_chunk and previous_chunk[-1].isalnum() and current_chunk[0].isalnum():
-                        yield " "
-                    
                     yield current_chunk
                     previous_chunk = current_chunk
             
