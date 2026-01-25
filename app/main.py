@@ -1,16 +1,24 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from app.api.routes import router
+from app.api.routes import router as api_router
+from app.api.auth import router as auth_router
+from app.core.database import engine, Base
 from app.core.logging import logger
-from app.services.embeddings_service import get_embeddings
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
-    Lifespan context manager for app startup/shutdown.
-    Pre-initializes the shared embeddings model on startup.
+    Manage application startup and shutdown lifecycle for the FastAPI app.
+    
+    On startup, logs startup messages, initializes the database schema (creates all tables), and records that the embeddings model will be initialized lazily on first use. After the application finishes running, logs shutdown messages.
     """
     logger.info("🚀 Application starting up...")
+    
+    # Initialize Database Tables
+    logger.info("🗄️ Initializing database tables...")
+    Base.metadata.create_all(bind=engine)
+    logger.info("✅ Database tables created.")
+
     # Embeddings model will be lazy-loaded on first request to speed up startup
     logger.info("ℹ️ Embeddings model will be initialized on first use")
     
@@ -28,7 +36,10 @@ app = FastAPI(
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
-app.include_router(router, prefix="/api/v1")
+app.include_router(api_router, prefix="/api/v1")
+app.include_router(auth_router, prefix="/api/v1/auth", tags=["Authentication"])
+from app.api.history import router as history_router
+app.include_router(history_router, prefix="/api/v1/history", tags=["History"])
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
