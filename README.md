@@ -1,241 +1,406 @@
-# SourceOne
+<div align="center">
+  <img src="app/static/SourceOneLogo.png" alt="SourceOne Logo" width="200" height="200">
+  <h1>SourceOne</h1>
+  <p>A comprehensive Retrieval-Augmented Generation (RAG) system for intelligent document processing and context-aware responses</p>
+  
+  [![Python](https://img.shields.io/badge/Python-3.8+-3776ab?style=flat-square&logo=python)](https://www.python.org)
+  [![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com)
+</div>
 
-A comprehensive Retrieval-Augmented Generation (RAG) system built with FastAPI, LangChain, ChromaDB, and OpenAI. This project enables users to upload documents, perform intelligent retrieval using hybrid search and reranking, and generate context-aware responses using large language models.
+---
 
-## Features
+## 📋 Table of Contents
 
-- **Document Ingestion**: Upload and process multiple file types (PDF, Markdown, TXT, DOCX) with automatic text splitting and embedding.
-- **Hybrid Retrieval**: Combines BM25 keyword search with semantic vector search for optimal document retrieval.
-- **Reranking**: Uses FlashRank to improve retrieval quality by reranking results based on relevance.
-- **LLM Generation**: Leverages GPT-OSS 120B for generating accurate, context-aware answers with streaming support.
-- **Advanced UI/UX**:
-  - Real-time streaming responses with "Thinking..." indicators
-  - LaTeX math rendering with KaTeX (supports `$$`, `\[`, and `[` delimiters)
-  - Syntax-highlighted code blocks with copy-to-clipboard functionality
-  - Source citations displayed with each answer
-  - Responsive design with modern aesthetics
-- **Performance Optimizations**:
-  - Lazy-loaded embeddings model for faster startup
-  - Non-blocking file uploads with background indexing
-  - JSON-encoded SSE streaming for preserved formatting
-- **REST API**: Full REST API for integration with other applications.
-- **Persistent Storage**: ChromaDB for efficient vector storage and retrieval.
-- **Debug Tools**: Included scripts for debugging retrieval, generation, and search comparison.
+- [Overview](#overview)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Architecture](#architecture)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Configuration](#configuration)
+- [Usage](#usage)
+- [API Endpoints](#api-endpoints)
+- [Project Structure](#project-structure)
+- [Contributing](#contributing)
+- [License](#license)
+- [Support](#support)
 
-## Installation
+---
+
+## 🎯 Overview
+
+**SourceOne** is a cutting-edge Retrieval-Augmented Generation (RAG) system that combines the power of document processing, intelligent semantic search, and large language models. Whether you're building a smart Q&A system, an intelligent document assistant, or a context-aware chatbot, SourceOne provides a robust foundation for these applications.
+
+With SourceOne, you can:
+- 📄 Upload and process multiple document formats
+- 🔍 Perform hybrid search with ranking and reranking
+- 🤖 Generate intelligent, context-aware responses
+- ⚡ Leverage state-of-the-art LLMs (OpenAI)
+- 🎯 Build production-ready RAG applications
+
+---
+
+## ✨ Features
+
+### Document Management
+- **Multi-format Support**: Upload and process various document types
+- **Intelligent Chunking**: Automatic document segmentation for optimal retrieval
+- **Metadata Extraction**: Preserve and utilize document metadata
+
+### Advanced Search Capabilities
+- **Hybrid Search**: Combine semantic and keyword-based search
+- **Reranking**: Intelligent result ranking using cross-encoders
+- **Vector Storage**: Efficient storage using ChromaDB
+- **Semantic Understanding**: Leverage embeddings for context-aware retrieval
+
+### Response Generation
+- **Context-Aware Responses**: Generate answers grounded in retrieved documents
+- **OpenAI Integration**: Utilize powerful language models
+- **Streaming Support**: Real-time response generation
+- **Citation Tracking**: Know where your answers come from
+
+### Production-Ready
+- **REST API**: Easy-to-use FastAPI endpoints
+- **Error Handling**: Comprehensive error management
+- **Logging**: Detailed logging for debugging and monitoring
+- **Scalable Architecture**: Built for growth
+
+---
+
+## 🛠️ Tech Stack
+
+| Component | Technology | Purpose |
+|-----------|-----------|---------|
+| **Backend Framework** | FastAPI | High-performance REST API |
+| **LLM Framework** | LangChain | Orchestrating LLM workflows |
+| **Vector Database** | ChromaDB | Efficient document embeddings storage |
+| **Language Model** | OpenAI API | State-of-the-art text generation |
+| **Frontend** | HTML5 | User interface |
+
+**Language Composition:**
+- Python: 39.2% (Backend Logic)
+- HTML: 60.8% (Frontend)
+
+---
+
+## 🏗️ Architecture
+
+```
+┌─────────────────────────────────────────────┐
+│         User Interface (HTML/Frontend)       │
+└──────────────────┬──────────────────────────┘
+                   │
+┌──────────────────▼──────────────────────────┐
+│          FastAPI REST API Server             │
+│  ├─ /upload (Document Upload)               │
+│  ├─ /search (Retrieve Documents)            │
+│  ├─ /query (Generate Response)              │
+│  └─ /health (System Status)                 │
+└──────────────────┬──────────────────────────┘
+                   │
+        ┌──────────┴──────────┐
+        │                     │
+┌───────▼────────┐   ┌────────▼────────┐
+│  LangChain     │   │  ChromaDB       │
+│  (Orchestration)   │  (Vector Store) │
+└───────┬────────┘   └────────┬────────┘
+        │                     │
+        └──────────┬──────────┘
+                   │
+        ┌──────────▼──────────┐
+        │   OpenAI API        │
+        │  (Language Models)  │
+        └─────────────────────┘
+```
+
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
 
-- Python 3.13 or higher
-- Open AI API key with access to OpenAI models
+Before you begin, ensure you have:
+- **Python 3.8+** installed
+- **pip** package manager
+- **OpenAI API Key** (get one at [platform.openai.com](https://platform.openai.com))
+- **Git** for version control
 
-### Setup
+### Installation
 
-1. Clone the repository:
-
+1. **Clone the Repository**
    ```bash
-   git clone https://github.com/yourusername/sourceone.git
-   cd sourceone
+   git clone https://github.com/Draxer542/SourceOne.git
+   cd SourceOne
    ```
 
-2. Install dependencies:
+2. **Create a Virtual Environment**
+   ```bash
+   python -m venv venv
+   
+   # On Windows
+   venv\Scripts\activate
+   
+   # On macOS/Linux
+   source venv/bin/activate
+   ```
 
+3. **Install Dependencies**
    ```bash
    pip install -r requirements.txt
    ```
 
-3. Create a `.env` file in the root directory and add your configuration:
+### Configuration
+
+1. **Environment Variables**
+   
+   Create a `.env` file in the project root:
    ```env
    OPENAI_API_KEY=your_openai_api_key_here
+   OPENAI_MODEL=gpt-4
+   CHROMA_DB_PATH=./chroma_db
    LOG_LEVEL=INFO
-   CHROMA_DB_DIR=data/chroma_db
    ```
 
-## Configuration
+2. **Update Configuration** (if needed)
+   
+   Modify `config.py` to customize:
+   - Chunk size and overlap for document processing
+   - Model parameters and temperature
+   - Vector database settings
 
-The application uses the following environment variables:
+---
 
-- `OPENAI_API_KEY`: Your OpenAI API key for accessing OpenAI models (required)
-- `LOG_LEVEL`: Logging level (default: INFO)
-- `CHROMA_DB_DIR`: Directory for ChromaDB persistence (default: data/chroma_db)
+## 💡 Usage
 
-## Usage
-
-### Running the Application
-
-Start the FastAPI server:
-
-```bash
-python app/main.py
-```
-
-The application will be available at:
-
-- Web UI: http://localhost:8000
-- API Documentation: http://localhost:8000/docs (Swagger UI)
-
-### Using the Web Interface
-
-1. Open http://localhost:8000 in your browser
-2. Upload documents using the upload section (supports PDF, MD, TXT, DOCX files, max 3 files)
-3. Enter your query in the query section
-4. View the generated answer along with source documents
-
-### Using the API
-
-#### Upload Documents
+### Starting the Server
 
 ```bash
-curl -X POST "http://localhost:8000/api/v1/upload" \
-  -F "files=@document1.pdf" \
-  -F "files=@document2.txt"
+# Development mode
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+
+# Production mode
+gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:app
 ```
 
-#### Query the System
+Access the API at `http://localhost:8000`
 
-```bash
-curl -X POST "http://localhost:8000/api/v1/query" \
-  -H "Content-Type: application/json" \
-  -d '{"query": "What is the main topic of the documents?"}'
+### Interactive API Documentation
+
+- **Swagger UI**: `http://localhost:8000/docs`
+- **ReDoc**: `http://localhost:8000/redoc`
+
+### Example: Upload and Query
+
+```python
+import requests
+
+# Upload a document
+with open("document.pdf", "rb") as f:
+    response = requests.post(
+        "http://localhost:8000/upload",
+        files={"file": f}
+    )
+    print(response.json())
+
+# Query the system
+response = requests.post(
+    "http://localhost:8000/query",
+    json={"query": "What is the main topic of the document?"}
+)
+print(response.json())
 ```
 
-## API Documentation
+---
 
-### Endpoints
+## 📡 API Endpoints
 
-#### POST /api/v1/upload
+### Document Management
 
-Upload and process documents.
+#### Upload Document
+```
+POST /upload
+Content-Type: multipart/form-data
 
-**Request:**
+Parameters:
+- file: Document file (PDF, TXT, DOCX, etc.)
 
-- `files`: List of files (PDF, MD, TXT, DOCX)
-
-**Response:**
-
-```json
+Response:
 {
-  "message": "Files processed successfully"
+  "file_id": "doc_123",
+  "filename": "document.pdf",
+  "chunks_created": 15,
+  "status": "success"
 }
 ```
 
-#### POST /api/v1/query
-
-Query the RAG system.
-
-**Request:**
-
-```json
-{
-  "query": "Your question here"
-}
+#### List Documents
 ```
+GET /documents
 
-**Response:**
-
-```json
+Response:
 {
-  "answer": "Generated answer based on retrieved documents",
-  "source_documents": [
+  "documents": [
     {
-      "content": "Document content snippet",
-      "metadata": {
-        "source": "filename.pdf",
-        "page": 1
-      }
+      "file_id": "doc_123",
+      "filename": "document.pdf",
+      "upload_date": "2026-01-25T10:30:00Z",
+      "chunk_count": 15
     }
   ]
 }
 ```
 
-#### POST /api/v1/query-stream
+### Search and Query
 
-Query the RAG system with streaming response.
+#### Search Documents
+```
+POST /search
+Content-Type: application/json
 
-**Request:**
-
-```json
+Request:
 {
-  "query": "Your question here"
+  "query": "search term",
+  "top_k": 5
+}
+
+Response:
+{
+  "results": [
+    {
+      "score": 0.95,
+      "content": "...",
+      "source": "document.pdf",
+      "metadata": {}
+    }
+  ]
 }
 ```
 
-**Response:**
+#### Generate Response
+```
+POST /query
+Content-Type: application/json
 
-Server-Sent Events (SSE) stream with:
+Request:
+{
+  "query": "Your question here",
+  "context_window": 5,
+  "temperature": 0.7
+}
 
-- `data:` events containing answer chunks (JSON-encoded)
-- `event: sources` with source document metadata
-- `data: [DONE]` to signal completion
+Response:
+{
+  "answer": "Generated response...",
+  "sources": ["document.pdf"],
+  "confidence": 0.92,
+  "processing_time_ms": 1250
+}
+```
 
-## Project Structure
+### System Health
+
+#### Health Check
+```
+GET /health
+
+Response:
+{
+  "status": "healthy",
+  "version": "1.0.0",
+  "database": "connected",
+  "llm": "connected"
+}
+```
+
+---
+
+## 📁 Project Structure
 
 ```
-agenticrag/
+SourceOne/
 ├── app/
-│   ├── main.py              # FastAPI application entry point
-│   ├── api/
-│   │   ├── routes.py        # API endpoints
-│   │   └── schemas.py       # Pydantic models
-│   ├── core/
-│   │   ├── config.py        # Configuration settings
-│   │   └── logging.py       # Logging configuration
+│   ├── __init__.py
+│   ├── main.py                 # FastAPI application entry point
+│   ├── config.py               # Configuration management
+│   ├── models/
+│   │   ├── request.py          # Request models
+│   │   └── response.py         # Response models
+│   ├── routes/
+│   │   ├── documents.py        # Document endpoints
+│   │   ├── search.py           # Search endpoints
+│   │   └── health.py           # Health check endpoints
 │   ├── services/
-│   │   ├── embeddings_service.py   # Singleton embeddings model
-│   │   ├── ingestion_service.py    # Document ingestion
-│   │   ├── retrieval_service.py    # Document retrieval
-│   │   └── generation_service.py   # Answer generation
-│   └── static/
-│       └── index.html       # Web interface
-├── data/
-│   └── chroma_db/           # ChromaDB storage
-├── opt/                     # Model files
-├── debug_*.py               # Debug scripts
-├── test_pipeline.py         # Pipeline testing
-├── pyproject.toml           # Project configuration
-├── requirements.txt         # Python dependencies
-└── README.md
+│   │   ├── document_processor.py  # Document handling
+│   │   ├── retriever.py           # Retrieval logic
+│   │   └── llm_handler.py         # LLM interactions
+│   └── utils/
+│       ├── logger.py           # Logging configuration
+│       └── helpers.py          # Utility functions
+├── frontend/
+│   ├── index.html              # Web interface
+│   ├── styles.css              # Styling
+│   └── script.js               # Frontend logic
+├── tests/
+│   ├── test_documents.py       # Document tests
+│   ├── test_search.py          # Search tests
+│   └── test_api.py             # API tests
+├── .env.example                # Environment template
+├── .gitignore                  # Git ignore rules
+├── requirements.txt            # Python dependencies
+├── docker-compose.yml          # Docker configuration
+├── Dockerfile                  # Container definition
+├── README.md                   # This file
+└── LICENSE                     # MIT License
 ```
 
-## Architecture
+---
 
-The system follows a modular architecture with three main services:
+## 🤝 Contributing
 
-1. **Ingestion Service**: Handles document upload, parsing, chunking, and embedding storage
-2. **Retrieval Service**: Performs hybrid search (BM25 + vector similarity) and reranking
-3. **Generation Service**: Uses retrieved context to generate answers via LLM
+We welcome contributions! Here's how to get started:
 
-## Debug and Testing
+1. **Fork the Repository**
+   ```bash
+   gh repo fork Draxer542/SourceOne
+   ```
 
-The project includes several debug and testing scripts:
+2. **Create a Feature Branch**
+   ```bash
+   git checkout -b feature/amazing-feature
+   ```
 
-- `debug_retrieval.py`: Test document retrieval functionality
-- `debug_generation.py`: Test answer generation
-- `debug_chroma.py`: Debug ChromaDB operations
-- `compare_search.py`: Compare different search methods
-- `test_pipeline.py`: End-to-end pipeline testing
+3. **Make Your Changes**
+   - Follow PEP 8 style guidelines
+   - Add tests for new functionality
+   - Update documentation as needed
 
-Run any debug script:
+4. **Commit Your Changes**
+   ```bash
+   git commit -m "Add amazing feature"
+   ```
 
-```bash
-python debug_retrieval.py
-```
+5. **Push to Your Branch**
+   ```bash
+   git push origin feature/amazing-feature
+   ```
 
-## Contributing
+6. **Open a Pull Request**
+   - Provide a clear description of your changes
+   - Reference any related issues
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+---
 
-## License
+### Community
+- 🐛 [Issue Tracker](https://github.com/Draxer542/SourceOne/issues)
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+---
 
-## Acknowledgments
+### Contact
+- 📧 Email: draxertechupdates@gmail.com
 
-- Built with [FastAPI](https://fastapi.tiangolo.com/)
-- Powered by [LangChain](https://www.langchain.com/)
-- Vector storage with [ChromaDB](https://www.trychroma.com/)
-- Reranking with [FlashRank](https://github.com/PrithivirajDamodaran/FlashRank)
+---
+
+<div align="center">
+  <p><a href="https://github.com/Draxer542/SourceOne">⭐ Give us a star on GitHub!</a></p>
+</div>
