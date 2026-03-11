@@ -55,6 +55,9 @@ class IngestionService:
             
             try:
                 documents = self._load_document(tmp_path, suffix)
+                # ✅ Overwrite temp path with original filename for clean citations
+                for doc in documents:
+                    doc.metadata["source"] = file.filename
                 all_documents.extend(documents)
             finally:
                 os.remove(tmp_path)

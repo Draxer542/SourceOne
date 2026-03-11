@@ -23,3 +23,5 @@ sqlalchemy
 python-jose[cryptography]
 passlib[bcrypt]
 bcrypt
+langsmith
+langchain-nvidia-ai-endpoints>=1.2.0

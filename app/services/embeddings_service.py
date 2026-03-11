@@ -1,5 +1,5 @@
 import os
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings
 from app.core.logging import logger
 
 _embeddings_instance = None
@@ -7,23 +7,23 @@ _embeddings_instance = None
 def get_embeddings():
     """
     Singleton pattern: Returns a shared embeddings instance.
-    Initializes on first call only to avoid duplicate model loading.
+    Initializes on first call only to avoid duplicate model loading and API calls.
     
-    Models are cached locally in the 'opt' directory to avoid re-downloads:
-    - sentence-transformers/all-MiniLM-L6-v2: ~90MB
-    - Models are downloaded only once, then reused from cache
+    NVIDIA embeddings are cached after first initialization to avoid:
+    - Redundant API connection overhead
+    - Repeated model loading
     """
     global _embeddings_instance
-    if _embeddings_instance is None:
-        logger.info("Initializing HuggingFace Embeddings (Singleton)...")
-        logger.info("ℹ️ Model will be cached in 'opt' folder to speed up subsequent startups")
-        
-        # Ensure cache directory exists
-        os.makedirs("opt", exist_ok=True)
-        
-        _embeddings_instance = HuggingFaceEmbeddings(
-            model_name="sentence-transformers/all-MiniLM-L6-v2",
-            cache_folder="opt"  # Cache models locally to avoid re-downloads
+    
+    if _embeddings_instance is not None:
+        return _embeddings_instance
+    
+    if not os.environ.get("NVIDIA_API_KEY"):
+        raise ValueError(
+            "NVIDIA_API_KEY environment variable is not set. "
+            "Please set it before calling get_embeddings()."
         )
-        logger.info("✅ HuggingFace Embeddings initialized and cached.")
+        
+    _embeddings_instance = NVIDIAEmbeddings(model="nvidia/nv-embedqa-e5-v5")
+    logger.info("✅ NVIDIA Embeddings initialized successfully.")
     return _embeddings_instance

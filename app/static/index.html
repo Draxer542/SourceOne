@@ -19,6 +19,8 @@
     <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Material Symbols -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     <style>
       /* Design Tokens */
       :root {
@@ -635,47 +637,177 @@
         gap: var(--space-sm);
       }
 
-      .file-item {
-        background-color: var(--color-gray-50);
-        border: 1px solid var(--color-gray-200);
-        padding: var(--space-md);
-        border-radius: var(--radius-md);
+      /* ── Rich File Upload Cards ── */
+      .file-cards-list {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
-        transition: all var(--transition-fast);
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 4px;
       }
 
-      .file-item:hover {
-        background-color: var(--color-gray-100);
-        border-color: var(--color-gray-300);
+      .file-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 14px 16px;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        position: relative;
+        transition: border-color 0.15s, box-shadow 0.15s;
+        animation: cardSlideIn 0.2s ease;
       }
 
-      .file-item-name {
-        font-size: var(--font-size-sm);
-        color: var(--color-gray-900);
-        font-weight: 500;
+      @keyframes cardSlideIn {
+        from { opacity: 0; transform: translateY(6px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+
+      .file-card.failed {
+        border-color: #fca5a5;
+        background: #fff;
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.08);
+      }
+
+      /* File type icon badge */
+      .file-type-icon {
+        position: relative;
+        width: 42px;
+        height: 48px;
+        flex-shrink: 0;
+      }
+
+      .file-type-icon svg.file-doc-svg {
+        width: 42px;
+        height: 48px;
+      }
+
+      .file-type-badge {
+        position: absolute;
+        bottom: 5px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 8px;
+        font-weight: 800;
+        color: #fff;
+        letter-spacing: 0.04em;
+        padding: 1px 3px;
+        border-radius: 2px;
+        white-space: nowrap;
+      }
+
+      .file-type-badge.pdf   { background: #dc2626; }
+      .file-type-badge.docx  { background: #2563eb; }
+      .file-type-badge.txt   { background: #64748b; }
+      .file-type-badge.md    { background: #7c3aed; }
+      .file-type-badge.other { background: #6b7280; }
+
+      /* Card body */
+      .file-card-body {
         flex: 1;
-        word-break: break-word;
-        margin-right: var(--space-md);
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
       }
 
-      .file-item-remove {
+      .file-card-name {
+        font-size: 13.5px;
+        font-weight: 600;
+        color: #111827;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .file-card-meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: #6b7280;
+      }
+
+      .file-card-size { color: #6b7280; }
+
+      .file-card-status {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-weight: 600;
+      }
+
+      .file-card-status.uploading { color: #6366f1; }
+      .file-card-status.complete  { color: #059669; }
+      .file-card-status.failed    { color: #dc2626; }
+
+      /* Progress bar */
+      .file-card-progress-wrap {
+        height: 6px;
+        background: #e5e7eb;
+        border-radius: 99px;
+        overflow: hidden;
+        margin-top: 6px;
+      }
+
+      .file-card-progress-bar {
+        height: 100%;
+        border-radius: 99px;
+        background: #6366f1;
+        width: 0%;
+        transition: width 0.4s ease;
+      }
+
+      .file-card-progress-bar.complete {
+        background: #10b981;
+      }
+
+      .file-card-progress-bar.failed {
+        background: #dc2626;
+      }
+
+      .file-card-progress-label {
+        font-size: 12px;
+        color: #6b7280;
+        text-align: right;
+        margin-top: 2px;
+      }
+
+      .file-card-retry {
+        font-size: 12.5px;
+        font-weight: 600;
+        color: #dc2626;
         background: none;
         border: none;
-        color: var(--color-gray-600);
+        padding: 0;
         cursor: pointer;
-        padding: var(--space-xs);
-        border-radius: var(--radius-sm);
-        transition: all var(--transition-fast);
-        font-size: var(--font-size-base);
+        text-decoration: none;
+        margin-top: 2px;
+        width: fit-content;
       }
 
-      .file-item-remove:hover {
-        background-color: var(--color-error-light);
-        color: var(--color-error);
+      .file-card-retry:hover { text-decoration: underline; }
+
+      /* Delete button (top-right) */
+      .file-card-delete {
+        background: none;
+        border: none;
+        color: #9ca3af;
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 6px;
+        line-height: 1;
+        font-size: 15px;
+        flex-shrink: 0;
+        align-self: flex-start;
+        transition: color 0.15s, background 0.15s;
       }
-      
+
+      .file-card-delete:hover {
+        color: #dc2626;
+        background: #fee2e2;
+      }
+
       /* Logo Toggle Wrapper */
       .sidebar-toggle-wrapper {
         display: none; /* Hidden by default (shown when sidebar collapsed via JS) */
@@ -766,18 +898,19 @@
 
       /* Selected Files Display */
       .selected-files-container {
-        background-color: var(--color-gray-50);
-        border: 1px solid var(--color-gray-200);
-        border-radius: var(--radius-md);
-        padding: var(--space-md) var(--space-lg);
-        margin-bottom: var(--space-lg);
+        background: transparent;
+        border: none;
+        padding: 0;
+        margin-bottom: var(--space-md);
       }
 
       .selected-files-label {
-        font-size: var(--font-size-sm);
+        font-size: var(--font-size-xs);
         font-weight: 600;
-        color: var(--color-gray-700);
-        margin: 0 0 var(--space-md) 0;
+        color: var(--color-text-secondary);
+        margin: 0 0 8px 0;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
       }
 
       .selected-files-list {
@@ -786,23 +919,9 @@
         gap: var(--space-sm);
       }
 
-      .selected-file-item {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background-color: var(--color-white);
-        border: 1px solid var(--color-gray-200);
-        border-radius: var(--radius-sm);
-        padding: var(--space-sm) var(--space-md);
-        font-size: var(--font-size-sm);
-      }
-
-      .selected-file-name {
-        color: var(--color-gray-900);
-        font-weight: 500;
-        word-break: break-word;
-        flex: 1;
-      }
+      /* kept for backward compat, now unused */
+      .selected-file-item { display: none; }
+      .selected-file-name  { display: none; }
 
       .btn-icon-small {
         background: none;
@@ -892,6 +1011,44 @@
       .message.bot .message-content:hover {
         box-shadow: var(--shadow-md);
         transform: translateY(-1px);
+      }
+
+      /* Upload confirmation bubble in chat */
+      .upload-confirm-bubble {
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        max-width: 420px;
+      }
+
+      .upload-confirm-bubble:hover {
+        box-shadow: none !important;
+        transform: none !important;
+      }
+
+      .upload-confirm-header {
+        font-size: 12.5px;
+        font-weight: 600;
+        color: #059669;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0 2px;
+      }
+
+      .upload-confirm-card {
+        cursor: default;
+        box-shadow: var(--shadow-sm);
+      }
+
+      .upload-confirm-card:hover {
+        /* no lift effect for read-only cards in chat */
+        border-color: #e5e7eb;
+        box-shadow: var(--shadow-sm);
       }
       
       /* AI Greeting Message */
@@ -1382,36 +1539,89 @@
 
       /* Sources/Citations styling */
       .sources-container {
-        margin-top: var(--space-sm);
-        padding: var(--space-sm) var(--space-md);
-        background-color: var(--color-gray-50);
-        border: 1px solid var(--color-gray-200);
-        border-radius: var(--radius-md);
+        margin-top: 10px;
         font-size: var(--font-size-sm);
       }
 
       .sources-header {
-        display: flex;
+        display: inline-flex;
         align-items: center;
-        gap: var(--space-sm);
+        gap: 6px;
         cursor: pointer;
-        color: var(--color-gray-600);
-        font-weight: 500;
+        color: var(--color-text-secondary);
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
         user-select: none;
+        padding: 4px 0;
+        border: none;
+        background: none;
+        transition: color var(--transition-fast);
       }
 
-      .sources-header:hover {
+      .sources-header:hover { color: var(--color-primary); }
+
+      .sources-chevron {
+        font-size: 10px;
+        transition: transform 0.2s ease;
+      }
+
+      .sources-header.open .sources-chevron {
+        transform: rotate(180deg);
+      }
+
+      .sources-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 8px;
+        animation: fadeIn 0.15s ease;
+      }
+
+      .source-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 10px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 99px;
+        font-size: 12px;
+        font-weight: 500;
+        color: #374151;
+        white-space: nowrap;
+        max-width: 260px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        transition: background 0.15s, border-color 0.15s;
+      }
+
+      .source-chip:hover {
+        background: #eff6ff;
+        border-color: #bfdbfe;
         color: var(--color-primary);
       }
 
-      .sources-list {
-        margin-top: var(--space-sm);
-        padding-left: var(--space-lg);
-        color: var(--color-gray-700);
+      .source-chip-badge {
+        font-size: 8px;
+        font-weight: 800;
+        color: #fff;
+        padding: 1px 4px;
+        border-radius: 3px;
+        letter-spacing: 0.03em;
+        flex-shrink: 0;
       }
 
-      .sources-list li {
-        margin: var(--space-xs) 0;
+      .source-chip-badge.pdf  { background: #dc2626; }
+      .source-chip-badge.docx { background: #2563eb; }
+      .source-chip-badge.txt  { background: #64748b; }
+      .source-chip-badge.md   { background: #7c3aed; }
+      .source-chip-badge.other{ background: #6b7280; }
+
+      .source-chip-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       /* Thinking indicator */
@@ -1595,61 +1805,191 @@
       .skip-link:focus {
         top: 0;
       }
-      /* Auth UI Styling */
-      .auth-container {
+      /* Auth Split Screen Layout (replaces auth-card) */
+      .auth-split-screen {
         display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 80vh;
-        width: 100%;
+        height: 100vh;
+        width: 100vw;
+        flex-direction: column;
       }
-
-      .auth-card {
-        background: var(--color-white);
-        padding: var(--space-2xl);
-        border-radius: var(--radius-xl);
-        box-shadow: var(--shadow-xl);
-        width: 100%;
-        max-width: 400px;
-        text-align: center;
-        border: 1px solid var(--color-gray-200);
+      @media (min-width: 1024px) {
+        .auth-split-screen { flex-direction: row; }
       }
-
-      .auth-title {
-        font-size: var(--font-size-2xl);
-        font-weight: 700;
-        margin-bottom: var(--space-md);
-        color: var(--color-text-primary);
+      
+      .auth-left-panel { display: none; }
+      @media (min-width: 1024px) {
+        .auth-left-panel {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          width: 50%;
+          background-color: #0A192F;
+          position: relative;
+          overflow: hidden;
+          border-right: 1px solid #112240;
+        }
       }
-
-      .auth-subtitle {
-        color: var(--color-text-secondary);
-        margin-bottom: var(--space-xl);
+      
+      .auth-mesh-bg {
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(circle at center, #112240 1px, transparent 1px);
+        background-size: 32px 32px;
+        opacity: 0.4;
       }
-
-      .auth-form {
+      
+      .auth-left-content {
+        position: relative;
+        z-index: 10;
         display: flex;
         flex-direction: column;
-        gap: var(--space-md);
+        align-items: center;
+        gap: 16px;
+        padding: 48px;
+        text-align: center;
+      }
+      
+      .auth-left-title {
+        color: white;
+        font-size: 32px;
+        font-weight: 700;
+        letter-spacing: 0.025em;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      
+      .auth-left-subtitle {
+        color: rgba(191, 219, 254, 0.6);
+        font-size: 17px;
+        line-height: 1.6;
+        max-width: 320px;
+        margin-top: 8px;
       }
 
+      .auth-blob-1 {
+        position: absolute;
+        bottom: -10%;
+        right: -10%;
+        width: 500px;
+        height: 500px;
+        background-color: rgba(37, 99, 235, 0.2);
+        border-radius: 50%;
+        filter: blur(100px);
+        mix-blend-mode: screen;
+        pointer-events: none;
+      }
+
+      .auth-blob-2 {
+        position: absolute;
+        top: -10%;
+        left: -10%;
+        width: 400px;
+        height: 400px;
+        background-color: rgba(59, 130, 246, 0.1);
+        border-radius: 50%;
+        filter: blur(80px);
+        mix-blend-mode: screen;
+        pointer-events: none;
+      }
+
+      .auth-right-panel {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background-color: #ffffff;
+        overflow-y: auto;
+      }
+      @media (min-width: 640px) {
+        .auth-right-panel { padding: 48px; }
+      }
+
+      .auth-form-container {
+        width: 100%;
+        max-width: 480px;
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+      }
+
+      .auth-mobile-logo {
+        display: flex;
+        justify-content: flex-start;
+        margin-bottom: 32px;
+      }
+      @media (min-width: 1024px) {
+        .auth-mobile-logo { display: none; }
+      }
+      .auth-mobile-logo span {
+        color: #0A192F;
+        font-size: 20px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        letter-spacing: 0.05em;
+      }
+      .auth-mobile-logo i { color: #2563eb; font-size: 24px; }
+
+      .auth-header {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .auth-header h1 {
+        font-size: 30px;
+        font-weight: 700;
+        color: #0f172a;
+        margin: 0;
+        line-height: 1.2;
+      }
+      .auth-header p {
+        color: #64748b;
+        font-size: 16px;
+        margin: 0;
+      }
+      
       .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
         text-align: left;
       }
 
       .form-label {
-        display: block;
-        margin-bottom: var(--space-xs);
-        font-size: var(--font-size-sm);
+        font-size: 14px;
         font-weight: 500;
-        color: var(--color-gray-700);
+        color: #0f172a;
       }
-
+      
       .auth-input-wrapper {
         position: relative;
         width: 100%;
       }
 
+      .auth-input {
+        min-height: 48px;
+        height: 48px;
+        width: 100%;
+        border-radius: 4px;
+        border: 1px solid rgba(100, 116, 139, 0.3);
+        background-color: #f8fafc;
+        padding: 0 16px;
+        font-size: 15px;
+        color: #0f172a;
+        transition: all 0.15s;
+      }
+      .auth-input:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+      }
+      .auth-input::placeholder { color: #64748b; }
+      
       .toggle-password-btn {
         position: absolute;
         right: 12px;
@@ -1665,11 +2005,41 @@
         justify-content: center;
         transition: color var(--transition-fast);
       }
+      .toggle-password-btn:hover { color: var(--color-brand-primary); }
 
-      .toggle-password-btn:hover {
-        color: var(--color-brand-primary);
+      .auth-btn {
+        height: 48px;
+        width: 100%;
+        border-radius: 4px;
+        background-color: #2563eb;
+        color: white;
+        font-weight: 600;
+        font-size: 15px;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.15s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 8px;
       }
-
+      .auth-btn:hover { background-color: #1d4ed8; }
+      
+      .auth-switch {
+        text-align: center;
+        font-size: 14px;
+        color: #64748b;
+        margin-top: 8px;
+      }
+      .auth-link {
+        color: #2563eb;
+        font-weight: 500;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      .auth-link:hover { text-decoration: underline; }
+      
       .login-info {
         display: inline-flex;
         align-items: center;
@@ -1682,94 +2052,100 @@
         margin-right: var(--space-md);
         border: 1px solid var(--color-gray-200);
       }
-      
-      .login-info i {
-        color: var(--color-brand-primary);
-      }
-      
-      .auth-input {
-        width: 100%;
-        padding: var(--space-md);
-        padding-right: 40px; /* Space for toggle button */
-        border: 1px solid var(--color-gray-300);
-        border-radius: var(--radius-md);
-        font-size: var(--font-size-base);
-        transition: all var(--transition-fast);
-      }
+      .login-info i { color: var(--color-brand-primary); }
 
-      .auth-input:focus {
-        outline: none;
-        border-color: var(--color-primary);
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-      }
-
-      .auth-btn {
-        background: var(--color-primary);
-        color: white;
-        padding: var(--space-md);
-        border: none;
-        border-radius: var(--radius-md);
-        font-size: var(--font-size-base);
-        font-weight: 600;
-        cursor: pointer;
-        transition: all var(--transition-fast);
-        margin-top: var(--space-sm);
-      }
-
-      .auth-btn:hover {
-        opacity: 0.9;
-        transform: translateY(-1px);
-        box-shadow: var(--shadow-md);
-      }
-
-      .auth-switch {
-        margin-top: var(--space-lg);
-        font-size: var(--font-size-sm);
-        color: var(--color-gray-600);
-      }
-
-      .auth-link {
-        color: var(--color-primary);
-        font-weight: 600;
-        cursor: pointer;
-        text-decoration: none;
-      }
-
-      .auth-link:hover {
-        text-decoration: underline;
-      }
-
+      /* ── Modern Auth Error Banner ── */
       .error-message {
-        background-color: #FEF2F2;
-        color: #991B1B;
-        padding: 12px;
-        border-radius: var(--radius-md);
-        font-size: var(--font-size-sm);
-        margin-bottom: var(--space-md);
-        display: none;
-        border-left: 4px solid #DC2626;
+        display: flex;
         align-items: center;
         gap: 10px;
-        box-shadow: var(--shadow-sm);
+        padding: 12px 14px;
+        border-radius: 8px;
+        background: #fff1f2;
+        border: 1px solid #fecdd3;
+        color: #be123c;
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 1.4;
+        /* off-screen start: slide down from above */
+        max-height: 0;
+        overflow: hidden;
+        opacity: 0;
+        transform: translateY(-6px);
+        transition:
+          max-height 0.32s cubic-bezier(0.4,0,0.2,1),
+          opacity    0.25s cubic-bezier(0.4,0,0.2,1),
+          transform  0.25s cubic-bezier(0.4,0,0.2,1),
+          margin     0.25s cubic-bezier(0.4,0,0.2,1);
+        margin-top: 0;
+        margin-bottom: 0;
       }
-      
-      .error-message::before {
-        content: '\f071'; /* FontAwesome Exclamation Triangle */
-        font-family: 'Font Awesome 6 Free';
-        font-weight: 900;
-        font-size: 16px;
+      .error-message .err-icon {
+        font-size: 17px;
+        flex-shrink: 0;
+        color: #e11d48;
       }
-      
       .error-message.show {
-        display: flex;
-        animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+        max-height: 100px;
+        opacity: 1;
+        transform: translateY(0);
+        margin-top: 0;
+        margin-bottom: 4px;
       }
       
-      @keyframes shake {
-        10%, 90% { transform: translate3d(-1px, 0, 0); }
-        20%, 80% { transform: translate3d(2px, 0, 0); }
-        30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-        40%, 60% { transform: translate3d(4px, 0, 0); }
+      /* ── Password Strength Checklist ── */
+      .pw-checks {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-top: 8px;
+        overflow: hidden;
+        max-height: 0;
+        opacity: 0;
+        transform: translateY(-4px);
+        transition:
+          max-height 0.3s cubic-bezier(0.4,0,0.2,1),
+          opacity    0.25s cubic-bezier(0.4,0,0.2,1),
+          transform  0.25s cubic-bezier(0.4,0,0.2,1);
+      }
+      .pw-checks.visible {
+        max-height: 120px;
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .pw-check-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: #94a3b8;
+        transition: color 0.2s;
+      }
+      .pw-check-item.met {
+        color: #10b981;
+      }
+      .pw-check-icon {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        border: 1.5px solid #cbd5e1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: border-color 0.2s, background 0.2s;
+        flex-shrink: 0;
+      }
+      .pw-check-item.met .pw-check-icon {
+        background: #10b981;
+        border-color: #10b981;
+      }
+      .pw-check-icon svg {
+        display: none;
+        width: 9px;
+        height: 9px;
+      }
+      .pw-check-item.met .pw-check-icon svg {
+        display: block;
       }
       /* Sidebar Collapsed State - Show Toggle Wrapper */
       body.sidebar-collapsed .sidebar-toggle-wrapper {
@@ -1779,66 +2155,98 @@
     </style>
   </head>
   <body>
-    <div class="auth-container" id="authSection" style="display: none;">
-      <div class="auth-card">
-        <h1 class="auth-title">Welcome Back</h1>
-        <p class="auth-subtitle">Sign in to access your knowledge base</p>
-        
-        <div id="authError" class="error-message"></div>
-        
-        <!-- Login Form -->
-        <!-- Login Form -->
-        <form id="loginForm" class="auth-form" onsubmit="handleLogin(event)" novalidate>
-          <div class="form-group">
-            <label class="form-label" for="loginEmail">Email Address</label>
-            <input type="email" id="loginEmail" class="auth-input" placeholder="you@example.com" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="loginPassword">Password</label>
-            <div class="auth-input-wrapper">
-              <input type="password" id="loginPassword" class="auth-input" placeholder="••••••••" required>
-              <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('loginPassword')">
-                <i class="far fa-eye"></i>
-              </button>
-            </div>
-          </div>
-          <button type="submit" class="auth-btn">Sign In</button>
-          
-          <div class="auth-switch">
-            Don't have an account? <a onclick="toggleAuthMode('register')" class="auth-link">Sign up</a>
-          </div>
-        </form>
+    <div class="auth-split-screen" id="authSection" style="display: none;">
+      <!-- Left Panel -->
+      <div class="auth-left-panel">
+        <div class="auth-mesh-bg"></div>
+        <div class="auth-left-content">
+          <img src="/static/SourceOneLogo.png" alt="SourceOne" style="max-width: 220px; width: 100%; height: auto; mix-blend-mode: screen; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.25));">
+          <div class="auth-left-subtitle">Secure, frictionless access for modern corporate teams.</div>
+        </div>
+        <div class="auth-blob-1"></div>
+        <div class="auth-blob-2"></div>
+      </div>
+      
+      <!-- Right Panel -->
+      <div class="auth-right-panel">
+        <div class="auth-form-container">
+          <!-- Mobile only Logo -->
+          <div class="auth-mobile-logo">
+            <img src="/static/SourceOneLogo.png" alt="SourceOne" style="height: 32px; width: auto; filter: brightness(0) saturate(100%) invert(23%) sepia(70%) saturate(500%) hue-rotate(200deg) brightness(95%) contrast(95%);"></div>
 
-        <!-- Register Form (Hidden) -->
-        <form id="registerForm" class="auth-form" style="display: none;" onsubmit="handleRegister(event)" novalidate>
-          <div class="form-group">
-            <label class="form-label" for="registerEmail">Email Address</label>
-            <input type="email" id="registerEmail" class="auth-input" placeholder="you@example.com" required>
+          <div class="auth-header">
+            <h1 id="authTitleText">Welcome back</h1>
+            <p id="authSubtitleText">Log in to your SourceOne enterprise account.</p>
           </div>
-          <div class="form-group">
-            <label class="form-label" for="registerPassword">Password</label>
-            <div class="auth-input-wrapper">
-              <input type="password" id="registerPassword" class="auth-input" placeholder="••••••••" required minlength="8">
-              <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('registerPassword')">
-                <i class="far fa-eye"></i>
-              </button>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="registerConfirmPassword">Confirm Password</label>
-            <div class="auth-input-wrapper">
-              <input type="password" id="registerConfirmPassword" class="auth-input" placeholder="••••••••" required minlength="8">
-              <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('registerConfirmPassword')">
-                <i class="far fa-eye"></i>
-              </button>
-            </div>
-          </div>
-          <button type="submit" class="auth-btn">Create Account</button>
           
-          <div class="auth-switch">
-            Already have an account? <a onclick="toggleAuthMode('login')" class="auth-link">Sign in</a>
-          </div>
-        </form>
+          <div id="authError" class="error-message"></div>
+
+          <!-- Login Form -->
+          <form id="loginForm" class="auth-form" onsubmit="handleLogin(event)" novalidate style="display: flex; flex-direction: column; gap: 20px;">
+            <div class="form-group">
+              <label class="form-label" for="loginEmail">Work Email</label>
+              <input type="email" id="loginEmail" class="auth-input" placeholder="name@enterprise.com" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="loginPassword">Password</label>
+              <div class="auth-input-wrapper">
+                <input type="password" id="loginPassword" class="auth-input" placeholder="••••••••" required>
+                <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('loginPassword')">
+                  <span class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
+                </button>
+              </div>
+            </div>
+            <button type="submit" class="auth-btn">Sign In</button>
+            <div class="auth-switch">
+              Don't have an account? <a onclick="toggleAuthMode('register')" class="auth-link">Sign Up</a>
+            </div>
+          </form>
+
+          <!-- Register Form -->
+          <form id="registerForm" class="auth-form" style="display: none; flex-direction: column; gap: 20px;" onsubmit="handleRegister(event)" novalidate>
+            <div class="form-group">
+              <label class="form-label" for="registerEmail">Work Email</label>
+              <input type="email" id="registerEmail" class="auth-input" placeholder="name@company.com" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="registerPassword">Password</label>
+              <div class="auth-input-wrapper">
+                <input type="password" id="registerPassword" class="auth-input" placeholder="Create a strong password" required minlength="8" oninput="onRegPasswordInput(this)">
+                <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('registerPassword')">
+                  <span class="material-symbols-outlined" style="font-size: 20px;">visibility_off</span>
+                </button>
+              </div>
+              <!-- Live password strength checklist -->
+              <div class="pw-checks" id="pwChecks">
+                <div class="pw-check-item" id="chk-len">
+                  <span class="pw-check-icon"><svg viewBox="0 0 10 8" fill="none"><polyline points="1,4 4,7 9,1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                  <span>At least 8 characters</span>
+                </div>
+                <div class="pw-check-item" id="chk-num">
+                  <span class="pw-check-icon"><svg viewBox="0 0 10 8" fill="none"><polyline points="1,4 4,7 9,1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                  <span>Contains a number</span>
+                </div>
+                <div class="pw-check-item" id="chk-special">
+                  <span class="pw-check-icon"><svg viewBox="0 0 10 8" fill="none"><polyline points="1,4 4,7 9,1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                  <span>Contains a special character</span>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="registerConfirmPassword">Confirm Password</label>
+              <div class="auth-input-wrapper">
+                <input type="password" id="registerConfirmPassword" class="auth-input" placeholder="••••••••" required minlength="8">
+                <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('registerConfirmPassword')">
+                  <span class="material-symbols-outlined" style="font-size: 20px;">visibility_off</span>
+                </button>
+              </div>
+            </div>
+            <button type="submit" class="auth-btn">Create Account</button>
+            <div class="auth-switch">
+              Already have an account? <a onclick="toggleAuthMode('login')" class="auth-link">Sign in</a>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
 
@@ -1952,8 +2360,7 @@
 
         <!-- Selected Files Display -->
         <div id="selectedFilesList" class="selected-files-container" style="display: none;">
-          <p class="selected-files-label"><i class="fas fa-paperclip"></i> Selected files:</p>
-          <div id="selectedFilesDisplay" class="selected-files-list"></div>
+          <div id="selectedFilesDisplay" class="file-cards-list"></div>
         </div>
         
         <!-- Floating Search Box -->
@@ -2055,17 +2462,49 @@
       // Toggle Password Visibility
       function togglePasswordVisibility(inputId) {
         const input = document.getElementById(inputId);
-        const icon = input.nextElementSibling.querySelector('i');
-        
+        const btn   = input.parentElement.querySelector('.toggle-password-btn');
+        const icon  = btn.querySelector('span.material-symbols-outlined');
         if (input.type === 'password') {
           input.type = 'text';
-          icon.classList.remove('fa-eye');
-          icon.classList.add('fa-eye-slash');
+          if (icon) icon.textContent = 'visibility_off';
         } else {
           input.type = 'password';
-          icon.classList.remove('fa-eye-slash');
-          icon.classList.add('fa-eye');
+          if (icon) icon.textContent = 'visibility';
         }
+      }
+
+      // ── Auth error helpers ──
+      function showAuthError(msg) {
+        const el = document.getElementById('authError');
+        el.innerHTML = `<span class="err-icon material-symbols-outlined">error</span><span>${msg}</span>`;
+        el.classList.add('show');
+      }
+      function hideAuthError() {
+        const el = document.getElementById('authError');
+        el.classList.remove('show');
+      }
+
+      // ── Live password strength checklist ──
+      function onRegPasswordInput(input) {
+        const val  = input.value;
+        const list = document.getElementById('pwChecks');
+
+        // Show list once user starts typing
+        if (val.length > 0) {
+          list.classList.add('visible');
+        } else {
+          list.classList.remove('visible');
+        }
+
+        // Rule checks
+        const rules = [
+          { id: 'chk-len',     met: val.length >= 8 },
+          { id: 'chk-num',     met: /[0-9]/.test(val) },
+          { id: 'chk-special', met: /[^A-Za-z0-9]/.test(val) },
+        ];
+        rules.forEach(({ id, met }) => {
+          document.getElementById(id).classList.toggle('met', met);
+        });
       }
 
       // Sidebar Logic
@@ -2131,14 +2570,13 @@
         if (!form.checkValidity()) {
           const firstInvalid = form.querySelector(':invalid');
           if (firstInvalid) {
-             errorDiv.textContent = firstInvalid.validationMessage;
-             errorDiv.classList.add('show');
-             firstInvalid.focus();
+            showAuthError(firstInvalid.validationMessage);
+            firstInvalid.focus();
           }
           return;
         }
 
-        const email = document.getElementById('loginEmail').value;
+        const email    = document.getElementById('loginEmail').value;
         const password = document.getElementById('loginPassword').value;
         
         try {
@@ -2157,17 +2595,13 @@
           }
 
           const data = await response.json();
-          Auth.login(data.access_token, { email }); // basic user object
+          Auth.login(data.access_token, { email });
           
-          // Clear forms
           document.getElementById('loginForm').reset();
-          document.getElementById('loginForm').reset();
-          errorDiv.classList.remove('show');
+          hideAuthError();
           
         } catch (err) {
-          errorDiv.textContent = err.message;
-          errorDiv.textContent = err.message;
-          errorDiv.classList.add('show');
+          showAuthError(err.message);
         }
       }
 
@@ -2175,27 +2609,23 @@
       async function handleRegister(e) {
         e.preventDefault();
         const form = e.target;
-        const errorDiv = document.getElementById('authError');
 
         // Custom Validation Logic
         if (!form.checkValidity()) {
           const firstInvalid = form.querySelector(':invalid');
           if (firstInvalid) {
-             errorDiv.textContent = firstInvalid.validationMessage;
-             errorDiv.classList.add('show');
-             firstInvalid.focus();
+            showAuthError(firstInvalid.validationMessage);
+            firstInvalid.focus();
           }
           return;
         }
 
-        const email = document.getElementById('registerEmail').value;
-        const password = document.getElementById('registerPassword').value;
+        const email         = document.getElementById('registerEmail').value;
+        const password      = document.getElementById('registerPassword').value;
         const confirmValues = document.getElementById('registerConfirmPassword').value;
 
         if (password !== confirmValues) {
-          errorDiv.textContent = "Passwords do not match";
-          errorDiv.textContent = "Passwords do not match";
-          errorDiv.classList.add('show');
+          showAuthError('Passwords do not match');
           return;
         }
 
@@ -2209,23 +2639,15 @@
 
           if (!regResponse.ok) {
             const error = await regResponse.json();
-            throw new Error(error.detail || 'Registration failed');
+            // error.detail can be a string or a FastAPI array of validation objects
+            const detail = error.detail;
+            const msg = Array.isArray(detail)
+              ? detail.map(d => d.msg || JSON.stringify(d)).join(', ')
+              : (typeof detail === 'string' ? detail : 'Registration failed');
+            throw new Error(msg);
           }
 
-          // 2. Auto Login
-          await handleLogin({ 
-            preventDefault: () => {}, 
-            target: { 
-              checkValidity: () => true, // Mock validation for auto-login
-              loginEmail: { value: email },
-              loginPassword: { value: password }
-            }
-          });
-          
-          // Or just switch to login view with success message
-          // For now, auto-login logic above mimics form submission but cleaner to just call the API again or reuse logic.
-          // Let's just manually call the login API here to be safe and clean
-          
+          // Auto-login after successful registration
           const formData = new FormData();
           formData.append('username', email);
           formData.append('password', password);
@@ -2236,34 +2658,48 @@
           });
           
           if (loginResponse.ok) {
-             const data = await loginResponse.json();
-             Auth.login(data.access_token, { email });
-             document.getElementById('registerForm').reset();
-             document.getElementById('registerForm').reset();
-             errorDiv.classList.remove('show');
+            const data = await loginResponse.json();
+            Auth.login(data.access_token, { email });
+            document.getElementById('registerForm').reset();
+            resetPwChecklist();
+            hideAuthError();
           } else {
-             toggleAuthMode('login'); // Fallback
+            toggleAuthMode('login'); // Fallback
           }
 
         } catch (err) {
-          errorDiv.textContent = err.message;
-          errorDiv.textContent = err.message;
-          errorDiv.classList.add('show');
+          showAuthError(err.message);
         }
       }
 
+      function resetPwChecklist() {
+        const checks = document.getElementById('pwChecks');
+        if (checks) {
+          checks.classList.remove('visible');
+          ['chk-len', 'chk-num', 'chk-special'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.classList.remove('met');
+          });
+        }
+        const pwInput = document.getElementById('registerPassword');
+        if (pwInput) pwInput.value = '';
+      }
+
       function toggleAuthMode(mode) {
-        document.getElementById('authError').classList.remove('show');
+        hideAuthError();
         if (mode === 'register') {
           document.getElementById('loginForm').style.display = 'none';
           document.getElementById('registerForm').style.display = 'flex';
-          document.querySelector('.auth-title').textContent = 'Create Account';
-          document.querySelector('.auth-subtitle').textContent = 'Join SourceOne today';
+          document.getElementById('authTitleText').textContent = 'Create an account';
+          document.getElementById('authSubtitleText').textContent = 'Enter your details to get started with SourceOne.';
         } else {
           document.getElementById('registerForm').style.display = 'none';
           document.getElementById('loginForm').style.display = 'flex';
-          document.querySelector('.auth-title').textContent = 'Welcome Back';
-          document.querySelector('.auth-subtitle').textContent = 'Sign in to access your knowledge base';
+          document.getElementById('authTitleText').textContent = 'Welcome back';
+          document.getElementById('authSubtitleText').textContent = 'Log in to your SourceOne enterprise account.';
+          // Reset signup form state when going back to login
+          document.getElementById('registerForm').reset();
+          resetPwChecklist();
         }
       }
 
@@ -2323,10 +2759,9 @@
       
       async function loadChat(conversationId) {
          currentConversationId = conversationId;
+         resetUploadState();           // ✅ Clear any pending upload cards when switching chats
          // Highlight active
          document.querySelectorAll('.recent-chat-item').forEach(el => el.classList.remove('active'));
-         // Re-render list to set active class (lazy way) -> actually better to just fetch list again or update class manually? 
-         // Let's just update styles on click but reload ensures sync.
          fetchRecentChats(); 
          
          const chatBox = document.getElementById('chatBox');
@@ -2351,8 +2786,18 @@
          }
       }
       
+      function resetUploadState() {
+          selectedFiles = [];
+          updateSelectedFilesList();
+          updateActionButton();
+          // ✅ Reset the file input so the browser fires 'change' even if the same files are chosen again
+          const fileInput = document.getElementById('fileInputChat');
+          if (fileInput) fileInput.value = '';
+      }
+
       function startNewChat() {
           currentConversationId = null;
+          resetUploadState();           // ✅ Clear any pending/failed upload cards
           document.getElementById('chatBox').innerHTML = ''; // Clear chat
           // Re-add greeting
           renderGreeting();
@@ -2453,6 +2898,131 @@
   }
 }
 
+      // ── File type helpers ──
+      function getFileExtension(filename) {
+        return (filename.split('.').pop() || '').toLowerCase();
+      }
+
+      function getFileTypeBadge(ext) {
+        const map = { pdf: 'PDF', docx: 'DOCX', doc: 'DOC', txt: 'TXT', md: 'MD' };
+        return map[ext] || ext.toUpperCase().slice(0, 4) || 'FILE';
+      }
+
+      function getFileTypeBadgeClass(ext) {
+        if (ext === 'pdf')  return 'pdf';
+        if (ext === 'docx' || ext === 'doc') return 'docx';
+        if (ext === 'txt')  return 'txt';
+        if (ext === 'md')   return 'md';
+        return 'other';
+      }
+
+      function formatFileSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(0) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+      }
+
+      function fileDocSVG() {
+        return `<svg class="file-doc-svg" viewBox="0 0 42 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="42" height="48" rx="5" fill="#F3F4F6"/>
+          <path d="M27 2H8C6.3 2 5 3.3 5 5v38c0 1.7 1.3 3 3 3h26c1.7 0 3-1.3 3-3V16L27 2z" fill="#E5E7EB"/>
+          <path d="M27 2v12c0 1.1.9 2 2 2h9L27 2z" fill="#D1D5DB"/>
+          <rect x="10" y="22" width="22" height="2" rx="1" fill="#9CA3AF"/>
+          <rect x="10" y="27" width="18" height="2" rx="1" fill="#9CA3AF"/>
+          <rect x="10" y="32" width="20" height="2" rx="1" fill="#9CA3AF"/>
+        </svg>`;
+      }
+
+      function buildFileCard(file, index, status = 'pending') {
+        const ext = getFileExtension(file.name);
+        const badge = getFileTypeBadge(ext);
+        const badgeClass = getFileTypeBadgeClass(ext);
+        const size = formatFileSize(file.size);
+
+        const card = document.createElement('div');
+        card.className = 'file-card' + (status === 'failed' ? ' failed' : '');
+        card.id = `file-card-${index}`;
+
+        card.innerHTML = `
+          <div class="file-type-icon">
+            ${fileDocSVG()}
+            <span class="file-type-badge ${badgeClass}">${badge}</span>
+          </div>
+          <div class="file-card-body">
+            <div class="file-card-name" title="${file.name}">${file.name}</div>
+            <div class="file-card-meta">
+              <span class="file-card-size">${size}</span>
+              <span style="color:#d1d5db">|</span>
+              <span class="file-card-status" id="card-status-${index}">
+                <i class="fas fa-clock" style="font-size:11px"></i> Ready
+              </span>
+            </div>
+            <div class="file-card-progress-wrap" id="card-prog-wrap-${index}" style="display:none">
+              <div class="file-card-progress-bar" id="card-prog-${index}"></div>
+            </div>
+            <div class="file-card-progress-label" id="card-prog-label-${index}" style="display:none"></div>
+            <button class="file-card-retry" id="card-retry-${index}" style="display:none"
+              onclick="retrySingleFile(${index})">Try again</button>
+          </div>
+          <button class="file-card-delete" title="Remove" onclick="removeFileCard(${index})">
+            <i class="fas fa-trash-can"></i>
+          </button>
+        `;
+        return card;
+      }
+
+      function setCardStatus(index, status, progressPct) {
+        const card        = document.getElementById(`file-card-${index}`);
+        const statusEl    = document.getElementById(`card-status-${index}`);
+        const progWrap    = document.getElementById(`card-prog-wrap-${index}`);
+        const progBar     = document.getElementById(`card-prog-${index}`);
+        const progLabel   = document.getElementById(`card-prog-label-${index}`);
+        const retryBtn    = document.getElementById(`card-retry-${index}`);
+        if (!card) return;
+
+        card.classList.toggle('failed', status === 'failed');
+
+        if (status === 'uploading') {
+          statusEl.className = 'file-card-status uploading';
+          statusEl.innerHTML = '<i class="fas fa-circle-notch fa-spin" style="font-size:11px"></i> Uploading';
+          progWrap.style.display = 'block';
+          progBar.className = 'file-card-progress-bar';
+          progBar.style.width = (progressPct || 30) + '%';
+          progLabel.style.display = 'none';
+          retryBtn.style.display = 'none';
+        } else if (status === 'complete') {
+          statusEl.className = 'file-card-status complete';
+          statusEl.innerHTML = '<i class="fas fa-circle-check" style="font-size:11px"></i> Complete';
+          progBar.className = 'file-card-progress-bar complete';
+          progBar.style.width = '100%';
+          progLabel.style.display = 'block';
+          progLabel.textContent = '100%';
+          retryBtn.style.display = 'none';
+        } else if (status === 'failed') {
+          statusEl.className = 'file-card-status failed';
+          statusEl.innerHTML = '<i class="fas fa-circle-xmark" style="font-size:11px"></i> Failed';
+          progBar.className = 'file-card-progress-bar failed';
+          progBar.style.width = '100%';
+          progLabel.style.display = 'none';
+          retryBtn.style.display = 'block';
+        }
+      }
+
+      function removeFileCard(index) {
+        selectedFiles.splice(index, 1);
+        updateSelectedFilesList();
+        updateActionButton();
+      }
+
+      function retrySingleFile(index) {
+        // Re-trigger upload with only this file
+        const file = selectedFiles[index];
+        if (!file) return;
+        selectedFiles = [file];
+        updateSelectedFilesList();
+        uploadFiles();
+      }
+
       // Handle file selection
       function handleFileSelectChat(event) {
         const files = Array.from(event.target.files);
@@ -2477,27 +3047,7 @@
         container.style.display = 'block';
         display.innerHTML = '';
         selectedFiles.forEach((file, index) => {
-          const item = document.createElement('div');
-          item.className = 'selected-file-item';
-          
-          const nameSpan = document.createElement('span');
-          nameSpan.className = 'selected-file-name';
-          nameSpan.textContent = file.name;
-          
-          const removeBtn = document.createElement('button');
-          removeBtn.className = 'btn-icon-small';
-          removeBtn.innerHTML = '<i class="fas fa-xmark"></i>';
-          removeBtn.title = `Remove ${file.name}`;
-          removeBtn.onclick = (e) => {
-            e.preventDefault();
-            selectedFiles.splice(index, 1);
-            updateSelectedFilesList();
-            updateActionButton();
-          };
-          
-          item.appendChild(nameSpan);
-          item.appendChild(removeBtn);
-          display.appendChild(item);
+          display.appendChild(buildFileCard(file, index));
         });
       }
 
@@ -2556,24 +3106,35 @@
         if (selectedFiles.length === 0) return;
 
         const btn = document.getElementById('actionBtn');
-        const status = document.getElementById('processingStatus');
 
         // Set loading state
         btn.disabled = true;
-        btn.innerHTML = '<div class="spinner"></div>'; // Simple spinner icon
-        // btn.classList.add('loading'); // No separate loading class needed if we just replace content
+        btn.innerHTML = '<div class="spinner"></div>';
         currentState = AppState.PROCESSING;
+
+        // Show uploading state on every card
+        selectedFiles.forEach((_, i) => setCardStatus(i, 'uploading', 30));
 
         const formData = new FormData();
         selectedFiles.forEach((file) => {
           formData.append('files', file);
         });
 
+        // Animate progress bars to ~80% while waiting
+        const progressIntervals = selectedFiles.map((_, i) => {
+          let pct = 30;
+          return setInterval(() => {
+            if (pct < 80) {
+              pct += 5;
+              const bar = document.getElementById(`card-prog-${i}`);
+              if (bar) bar.style.width = pct + '%';
+            }
+          }, 300);
+        });
+
         try {
           const headers = {};
-          if (Auth.token) {
-            headers['Authorization'] = `Bearer ${Auth.token}`;
-          }
+          if (Auth.token) headers['Authorization'] = `Bearer ${Auth.token}`;
 
           const response = await fetch('/api/v1/upload', {
             method: 'POST',
@@ -2582,25 +3143,33 @@
           });
 
           const data = await response.json();
+          progressIntervals.forEach(clearInterval);
 
           if (response.ok) {
-            showStatus('processingStatus', '<i class="fas fa-circle-check" style="color: #059669;"></i> ' + data.message, 'success');
-            addMessage(`<i class="fas fa-folder-open"></i> Uploaded ${selectedFiles.map(f => f.name).join(', ')}`, 'bot');
-            
-            selectedFiles = [];
-            updateSelectedFilesList();
-            updateActionButton();
-            currentState = AppState.READY;
-            
-            // Auto-focus query input
-            document.getElementById('queryInput').focus();
+            // Mark all complete
+            selectedFiles.forEach((_, i) => setCardStatus(i, 'complete'));
+
+            addUploadConfirmMessage(selectedFiles);
+
+            // Clear after a short delay so user sees the green state, then reset input
+            setTimeout(() => {
+              resetUploadState();    // ✅ clears selectedFiles, cards, and file input value
+              currentState = AppState.READY;
+              document.getElementById('queryInput').focus();
+            }, 1800);
+
           } else {
             throw new Error(data.detail || 'Upload failed');
           }
         } catch (error) {
+          progressIntervals.forEach(clearInterval);
+          // Mark all failed
+          selectedFiles.forEach((_, i) => setCardStatus(i, 'failed'));
           showStatus('processingStatus', '<i class="fas fa-circle-exclamation"></i> ' + error.message, 'error');
+          // ✅ Reset file input so user can re-select files for retry
+          const fileInput = document.getElementById('fileInputChat');
+          if (fileInput) fileInput.value = '';
           currentState = AppState.IDLE;
-          updateActionButton();
         } finally {
           btn.disabled = false;
           btn.classList.remove('loading');
@@ -2732,24 +3301,55 @@
                         
                         // 5. Enhance
                         enhanceRenderedContent(content);
-                        
-                        // Append sources if available (Collapsible Style)
-                        if (sourcesData && sourcesData.length > 0) {
-                          const sourcesContainer = document.createElement('div');
-                          sourcesContainer.className = 'sources-container';
-                          
-                          const uniqueSources = [...new Set(sourcesData.map(s => s.source))];
-                          sourcesContainer.innerHTML = `
-                            <div class="sources-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'">
-                              <i class="fas fa-book-open"></i> Sources (${uniqueSources.length})
-                            </div>
-                            <ul class="sources-list" style="display: none;">
-                              ${uniqueSources.map(src => `<li><i class="fas fa-file-alt"></i> ${src}</li>`).join('')}
-                            </ul>
-                          `;
-                          // Append to the message container (spinnerElem), not content which is the bubble
-                          if (spinnerElem) spinnerElem.appendChild(sourcesContainer);
-                        }
+                                            // Append sources if available (pill-chip style)
+                         if (sourcesData && sourcesData.length > 0) {
+                           const sourcesContainer = document.createElement('div');
+                           sourcesContainer.className = 'sources-container';
+
+                           // Deduplicate and get basenames
+                           const uniqueSources = [...new Set(sourcesData.map(s => s.source))];
+                           const basenames = uniqueSources.map(src => src.split(/[\\/]/).pop());
+
+                           // Header (toggle button)
+                           const header = document.createElement('button');
+                           header.className = 'sources-header';
+                           header.innerHTML = `
+                             <i class="fas fa-book-open" style="font-size:11px"></i>
+                             <span>${basenames.length} Source${basenames.length > 1 ? 's' : ''}</span>
+                             <i class="fas fa-chevron-down sources-chevron"></i>
+                           `;
+
+                           // Chips wrapper (hidden by default)
+                           const chipsWrap = document.createElement('div');
+                           chipsWrap.className = 'sources-chips';
+                           chipsWrap.style.display = 'none';
+
+                           basenames.forEach(name => {
+                             const ext = (name.split('.').pop() || '').toLowerCase();
+                             const badgeMap = { pdf:'PDF', docx:'DOCX', doc:'DOC', txt:'TXT', md:'MD' };
+                             const badge = badgeMap[ext] || ext.toUpperCase().slice(0,4) || 'FILE';
+                             const badgeCls = ['pdf','docx','doc'].includes(ext) ? (ext==='pdf'?'pdf':'docx') : (ext==='txt'?'txt': ext==='md'?'md':'other');
+
+                             const chip = document.createElement('span');
+                             chip.className = 'source-chip';
+                             chip.title = name;
+                             chip.innerHTML = `
+                               <span class="source-chip-badge ${badgeCls}">${badge}</span>
+                               <span class="source-chip-name">${name}</span>
+                             `;
+                             chipsWrap.appendChild(chip);
+                           });
+
+                           header.addEventListener('click', () => {
+                             const isOpen = chipsWrap.style.display !== 'none';
+                             chipsWrap.style.display = isOpen ? 'none' : 'flex';
+                             header.classList.toggle('open', !isOpen);
+                           });
+
+                           sourcesContainer.appendChild(header);
+                           sourcesContainer.appendChild(chipsWrap);
+                           if (spinnerElem) spinnerElem.appendChild(sourcesContainer);
+                         }
                       } catch (error) {
                         content.textContent = botContent;
                       }
@@ -2781,6 +3381,56 @@
         } finally {
           btn.disabled = false;
         }
+      }
+
+      function addUploadConfirmMessage(files) {
+        const box = document.getElementById('chatBox');
+        const msg = document.createElement('div');
+        msg.className = 'message bot';
+
+        const bubble = document.createElement('div');
+        bubble.className = 'message-content upload-confirm-bubble';
+
+        // Header label
+        const header = document.createElement('div');
+        header.className = 'upload-confirm-header';
+        header.innerHTML = '<i class="fas fa-circle-check" style="color:#059669;font-size:13px"></i> <span>Documents indexed successfully</span>';
+        bubble.appendChild(header);
+
+        // One read-only card per file
+        files.forEach((file) => {
+          const ext  = getFileExtension(file.name);
+          const badge = getFileTypeBadge(ext);
+          const badgeCls = getFileTypeBadgeClass(ext);
+          const size  = formatFileSize(file.size);
+
+          const card = document.createElement('div');
+          card.className = 'file-card upload-confirm-card';
+          card.innerHTML = `
+            <div class="file-type-icon">
+              ${fileDocSVG()}
+              <span class="file-type-badge ${badgeCls}">${badge}</span>
+            </div>
+            <div class="file-card-body">
+              <div class="file-card-name" title="${file.name}">${file.name}</div>
+              <div class="file-card-meta">
+                <span class="file-card-size">${size}</span>
+                <span style="color:#d1d5db">|</span>
+                <span class="file-card-status complete">
+                  <i class="fas fa-circle-check" style="font-size:11px"></i> Complete
+                </span>
+              </div>
+              <div class="file-card-progress-wrap" style="display:block">
+                <div class="file-card-progress-bar complete" style="width:100%"></div>
+              </div>
+            </div>
+          `;
+          bubble.appendChild(card);
+        });
+
+        msg.appendChild(bubble);
+        box.appendChild(msg);
+        box.scrollTop = box.scrollHeight;
       }
 
       function addSpinnerMessage() {
